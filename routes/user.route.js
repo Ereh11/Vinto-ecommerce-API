@@ -1,0 +1,1 @@
+// all user routes are defined here except login and register
