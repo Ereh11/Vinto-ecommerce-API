@@ -28,7 +28,7 @@ const drive = google.drive({
 // const filePath = path.join(__dirname, 'test.jpg');
 
 async function uploadFile(image) {
-  const filePath = path.join('../../', image);
+  const filePath = path.join(__dirname, `../../${image}`);
   try {
     const response = await drive.files.create({
       requestBody: {
@@ -65,7 +65,6 @@ async function deleteFile() {
 
 // deleteFile();
 
-
 async function generatePublicUrl(image) {
   try {
     const fileId = await uploadFile(image);
@@ -83,8 +82,7 @@ async function generatePublicUrl(image) {
     return src;
   } catch (err) { console.log(err.message) }
 }
-// we need to make the url in this format 
-// src="https://lh3.googleusercontent.com/d/'ID'=w1000?authuser=1/view"
-generatePublicUrl('test.jpg').then((url) => console.log(url));
+
+module.exports = generatePublicUrl;
 
 
