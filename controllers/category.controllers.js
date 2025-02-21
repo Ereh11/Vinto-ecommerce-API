@@ -1,6 +1,7 @@
 const { Category } = require("../models/category.modle.js");
 const sendResponse = require("../utils/sendResponse.js");
 const asyncHandler = require("../middlewares/asyncHandler.js");
+const { status } = require("../utils/status.js");
 
 // GET all categories
 exports.getAllCategories = asyncHandler(async (req, res) => {
@@ -9,19 +10,19 @@ exports.getAllCategories = asyncHandler(async (req, res) => {
   if (categories.length === 0) {
     return sendResponse(
       res,
-      "FAIL",
+      status.Fail,
       404,
       { categories: null },
-      { text: "No categories found" }
+      "No categories found"
     );
   }
 
   sendResponse(
     res,
-    "SUCCESS",
+    status.Success,
     200,
     { categories },
-    { text: "Categories retrieved successfully" }
+    "Categories retrieved successfully"
   );
 });
 
@@ -31,19 +32,19 @@ exports.getCategoryById = asyncHandler(async (req, res) => {
   if (!category) {
     return sendResponse(
       res,
-      "FAIL",
+      status.Fail,
       404,
       { category: null },
-      { text: "Category not found" }
+      "Category not found"
     );
   }
 
   sendResponse(
     res,
-    "SUCCESS",
+    status.Success,
     200,
     { category },
-    { text: "Category retrieved successfully" }
+    "Category retrieved successfully"
   );
 });
 
@@ -55,10 +56,10 @@ exports.createCategory = asyncHandler(async (req, res) => {
 
   sendResponse(
     res,
-    "SUCCESS",
+    status.Success,
     201,
     { category },
-    { text: "Category created successfully" }
+    "Category created successfully"
   );
 });
 
@@ -72,19 +73,19 @@ exports.updateCategory = asyncHandler(async (req, res) => {
   if (!category) {
     return sendResponse(
       res,
-      "FAIL",
+      status.Fail,
       404,
       { category: null },
-      { text: "Category not found" }
+      "Category not found"
     );
   }
 
   sendResponse(
     res,
-    "SUCCESS",
+    status.Success,
     200,
     { category },
-    { text: "Category updated successfully" }
+    "Category updated successfully"
   );
 });
 
@@ -98,19 +99,19 @@ exports.partialUpdateCategory = asyncHandler(async (req, res) => {
   if (!category) {
     return sendResponse(
       res,
-      "FAIL",
+      status.Fail,
       404,
       { category: null },
-      { text: "Category not found" }
+      "Category not found"
     );
   }
 
   sendResponse(
     res,
-    "SUCCESS",
+    status.Success,
     200,
     { category },
-    { text: "Category partially updated successfully" }
+    "Category partially updated successfully"
   );
 });
 
@@ -120,19 +121,19 @@ exports.deleteCategory = asyncHandler(async (req, res) => {
   if (!category) {
     return sendResponse(
       res,
-      "FAIL",
+      status.Fail,
       404,
       { category: null },
-      { text: "Category not found" }
+      "Category not found"
     );
   }
 
   sendResponse(
     res,
-    "SUCCESS",
+    status.Success,
     200,
     { category },
-    { text: "Category deleted successfully" }
+    "Category deleted successfully"
   );
 });
 
@@ -142,18 +143,18 @@ exports.deleteAllCategories = asyncHandler(async (req, res) => {
   if (result.deletedCount === 0) {
     return sendResponse(
       res,
-      "FAIL",
+      status.Fail,
       404,
       { categories: null },
-      { text: "No categories found to delete" }
+      "No categories found to delete"
     );
   }
 
   sendResponse(
     res,
-    "SUCCESS",
+    status.Success,
     200,
     { categories: [] },
-    { text: "All categories deleted successfully" }
+    "All categories deleted successfully"
   );
 });

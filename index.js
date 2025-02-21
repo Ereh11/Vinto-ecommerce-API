@@ -7,10 +7,8 @@ const categoryRoutes = require("./routes/category.route.js");
 const errorHandler = require("./middlewares/errorHandler.js");
 
 const URLDB =
-  "mongodb://Vintodevs:amj76CzcY4Ymqeqc@vintocluster-shard-00-00.frlbn.mongodb.net:27017,vintocluster-shard-00-01.frlbn.mongodb.net:27017,vintocluster-shard-00-02.frlbn.mongodb.net:27017/Vinto?ssl=true&replicaSet=atlas-7o5bfh-shard-0&authSource=admin&retryWrites=true&w=majority&appName=VintoCluster";
+  "mongodb+srv://Vintodevs:amj76CzcY4Ymqeqc@vintocluster.frlbn.mongodb.net/?retryWrites=true&w=majority&appName=VintoCluster";
 
-// const mongoURI =
-//   "mongodb+srv://kholoudellkasaby:FRNtzLLFoVmDYCLW@cluster0.t6fvn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 const app = express();
 
 mongoose
@@ -19,7 +17,7 @@ mongoose
     console.log("Mongoose Connect Successfully");
   })
   .catch((err) => {
-    console.log(err.message);
+    console.log("ERORRRRRRRRR");
   });
 
 app.use(cors());
