@@ -21,11 +21,11 @@ const connectDB = async () => {
 const seedDatabase = async () => {
   try {
     // Generate the public URL for the image
-    const imageUrl = await generatePublicUrl("test.jpeg");
+    const imageUrl = await generatePublicUrl("Furniture.jpg");
 
     // Create a sample category object
     const sampleCategory = {
-      title: "Electronics",
+      title: "Furniture",
       img: imageUrl,
     };
 
