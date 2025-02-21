@@ -3,15 +3,16 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+
 const categoryRoutes = require("./routes/category.route.js");
 const  productRoutes= require("./routes/product.route.js")
 const {Product} =require("./models/product.modle.js")
+const errorHandler = require("./middlewares/errorHandler.js")
 const URLDB =
   "mongodb://Vintodevs:amj76CzcY4Ymqeqc@vintocluster-shard-00-00.frlbn.mongodb.net:27017,vintocluster-shard-00-01.frlbn.mongodb.net:27017,vintocluster-shard-00-02.frlbn.mongodb.net:27017/Vinto?ssl=true&replicaSet=atlas-7o5bfh-shard-0&authSource=admin&retryWrites=true&w=majority&appName=VintoCluster";
   const productcontroller= require('./controllers/product.controllers.js')
 
-// const mongoURI =
-//   "mongodb+srv://kholoudellkasaby:FRNtzLLFoVmDYCLW@cluster0.t6fvn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+
 const app = express();
 const { check, validationResult } = require("express-validator");
 
@@ -31,15 +32,7 @@ app.use(express.json());
 // app.use("", );
 app.use("/api/categories", categoryRoutes);
 
-app.use((err, req, res, next) => {
-  console.error("Error:", err.message);
-  res.status(500).json({
-    status: "ERROR",
-    code: 500,
-    data: null,
-    message: "Internal Server Error",
-  });
-});
+app.use(errorHandler);
 
  
   //  const products = [
