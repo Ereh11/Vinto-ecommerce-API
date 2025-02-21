@@ -1,12 +1,29 @@
-module.exports = (req, res, next) => {
+const sendResponse = require("../utils/sendResponse.js");
+
+const validateCategory = (req, res, next) => {
   const { title } = req.body;
+
   if (!title?.trim()) {
-    return res.status(400).json({
-      status: "FAIL",
-      code: 400,
-      data: { category: null },
-      message: "Title is required",
-    });
+    return sendResponse(
+      res,
+      "FAIL",
+      400,
+      { category: null },
+      { text: "Title is required" }
+    );
   }
+
+  if (!isNaN(title)) {
+    return sendResponse(
+      res,
+      "FAIL",
+      400,
+      { category: null },
+      { text: "Title must be a string" }
+    );
+  }
+
   next();
 };
+
+module.exports = validateCategory;

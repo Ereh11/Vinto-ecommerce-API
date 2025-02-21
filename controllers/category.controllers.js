@@ -1,116 +1,159 @@
 const { Category } = require("../models/category.modle.js");
+const sendResponse = require("../utils/sendResponse.js");
+const asyncHandler = require("../middlewares/asyncHandler.js");
 
-const sendResponse = (res, status, code, data, message) => {
-  res.status(code).json({ status, code, data, message });
-};
+// GET all categories
+exports.getAllCategories = asyncHandler(async (req, res) => {
+  const categories = await Category.find();
 
-//Get
-exports.getAllCategories = async (req, res, next) => {
-  try {
-    const categories = await Category.find();
-    sendResponse(
+  if (categories.length === 0) {
+    return sendResponse(
       res,
-      "SUCCESS",
-      200,
-      categories,
-      "Categories retrieved successfully"
+      "FAIL",
+      404,
+      { categories: null },
+      { text: "No categories found" }
     );
-  } catch (error) {
-    next(error);
   }
-};
 
-exports.getCategoryById = async (req, res, next) => {
-  try {
-    const category = await Category.findById(req.params.id);
-    if (!category)
-      return sendResponse(res, "FAIL", 404, null, "Category not found");
-    sendResponse(
-      res,
-      "SUCCESS",
-      200,
-      category,
-      "Category retrieved successfully"
-    );
-  } catch (error) {
-    next(error);
-  }
-};
+  sendResponse(
+    res,
+    "SUCCESS",
+    200,
+    { categories },
+    { text: "Categories retrieved successfully" }
+  );
+});
 
-//Post
-exports.createCategory = async (req, res, next) => {
-  try {
-    const { title, img } = req.body;
-    const category = new Category({ title, img });
-    await category.save();
-    sendResponse(
+// GET by ID
+exports.getCategoryById = asyncHandler(async (req, res) => {
+  const category = await Category.findById(req.params.id);
+  if (!category) {
+    return sendResponse(
       res,
-      "SUCCESS",
-      201,
-      category,
-      "Category created successfully"
+      "FAIL",
+      404,
+      { category: null },
+      { text: "Category not found" }
     );
-  } catch (error) {
-    next(error);
   }
-};
 
-//put
-exports.updateCategory = async (req, res, next) => {
-  try {
-    const category = await Category.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-    if (!category)
-      return sendResponse(res, "FAIL", 404, null, "Category not found");
-    sendResponse(
-      res,
-      "SUCCESS",
-      200,
-      category,
-      "Category updated successfully"
-    );
-  } catch (error) {
-    next(error);
-  }
-};
+  sendResponse(
+    res,
+    "SUCCESS",
+    200,
+    { category },
+    { text: "Category retrieved successfully" }
+  );
+});
 
-//patch
-exports.partialUpdateCategory = async (req, res, next) => {
-  try {
-    const category = await Category.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-    if (!category)
-      return sendResponse(res, "FAIL", 404, null, "Category not found");
-    sendResponse(
-      res,
-      "SUCCESS",
-      200,
-      category,
-      "Category partially updated successfully"
-    );
-  } catch (error) {
-    next(error);
-  }
-};
+// POST
+exports.createCategory = asyncHandler(async (req, res) => {
+  const { title, img } = req.body;
+  const category = new Category({ title, img });
+  await category.save();
 
-//Delete
-exports.deleteCategory = async (req, res, next) => {
-  try {
-    const category = await Category.findByIdAndDelete(req.params.id);
-    if (!category)
-      return sendResponse(res, "FAIL", 404, null, "Category not found");
-    sendResponse(
+  sendResponse(
+    res,
+    "SUCCESS",
+    201,
+    { category },
+    { text: "Category created successfully" }
+  );
+});
+
+// PUT
+exports.updateCategory = asyncHandler(async (req, res) => {
+  const category = await Category.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  if (!category) {
+    return sendResponse(
       res,
-      "SUCCESS",
-      200,
-      category,
-      "Category deleted successfully"
+      "FAIL",
+      404,
+      { category: null },
+      { text: "Category not found" }
     );
-  } catch (error) {
-    next(error);
   }
-};
+
+  sendResponse(
+    res,
+    "SUCCESS",
+    200,
+    { category },
+    { text: "Category updated successfully" }
+  );
+});
+
+// PATCH
+exports.partialUpdateCategory = asyncHandler(async (req, res) => {
+  const category = await Category.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  if (!category) {
+    return sendResponse(
+      res,
+      "FAIL",
+      404,
+      { category: null },
+      { text: "Category not found" }
+    );
+  }
+
+  sendResponse(
+    res,
+    "SUCCESS",
+    200,
+    { category },
+    { text: "Category partially updated successfully" }
+  );
+});
+
+// DELETE by ID
+exports.deleteCategory = asyncHandler(async (req, res) => {
+  const category = await Category.findByIdAndDelete(req.params.id);
+  if (!category) {
+    return sendResponse(
+      res,
+      "FAIL",
+      404,
+      { category: null },
+      { text: "Category not found" }
+    );
+  }
+
+  sendResponse(
+    res,
+    "SUCCESS",
+    200,
+    { category },
+    { text: "Category deleted successfully" }
+  );
+});
+
+// DELETE all
+exports.deleteAllCategories = asyncHandler(async (req, res) => {
+  const result = await Category.deleteMany({});
+  if (result.deletedCount === 0) {
+    return sendResponse(
+      res,
+      "FAIL",
+      404,
+      { categories: null },
+      { text: "No categories found to delete" }
+    );
+  }
+
+  sendResponse(
+    res,
+    "SUCCESS",
+    200,
+    { categories: [] },
+    { text: "All categories deleted successfully" }
+  );
+});

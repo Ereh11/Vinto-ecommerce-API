@@ -6,7 +6,8 @@ const validateCategory = require("../middlewares/validateCategory");
 router
   .route("/")
   .get(categoryController.getAllCategories)
-  .post(validateCategory, categoryController.createCategory);
+  .post(validateCategory, categoryController.createCategory)
+  .delete(categoryController.deleteAllCategories);
 
 router
   .route("/:id")
