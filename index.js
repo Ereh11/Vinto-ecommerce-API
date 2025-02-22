@@ -3,6 +3,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const categoryRoutes = require("./routes/category.route.js");
+const likeRoutes = require("./routes/itemLiked.route.js");
+const wishlistRoutes = require("./routes/wishedList.route.js");
 const errorHandler = require("./middlewares/errorHandler.js");
 
 const app = express();
@@ -18,6 +20,8 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/categories", categoryRoutes);
+app.use("/api/likes", likeRoutes);
+app.use("/api/wishlist", wishlistRoutes);
 app.use(errorHandler);
 
 app.listen(4000, () => {
