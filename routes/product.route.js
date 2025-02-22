@@ -5,7 +5,9 @@ const  validateschema=require('../middlewares/validateproduct')
 const router = express.Router();
 router.route('/')
     .get(productcontroller.getallproducts)
-    .post(validateschema, productcontroller.postproducts);
+    .post(validateschema, productcontroller.postproducts)
+    .delete(productcontroller.deleteproducts);
+
 
   router.route('/:productid')
 .get(  productcontroller.getsingleproducts)

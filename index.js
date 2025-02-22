@@ -3,6 +3,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const sendResponse = require("./utils/sendResponse.js");
+const { status } = require("./utils/status.js");
 
 const categoryRoutes = require("./routes/category.route.js");
 const productRoutes = require("./routes/product.route.js")
@@ -30,6 +32,11 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 
 app.use(errorHandler);
+
+
+app.all('*', (req, res) => {
+  sendResponse(res, status.fail, 404, null, `Route '${req.originalUrl}' not found`);
+});
 
 app.listen(4000, () => {
   console.log("Server is listining on port 4000");

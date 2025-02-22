@@ -2,230 +2,202 @@
 const {Product} =require("../models/product.modle.js")
 const { validationResult } = require("express-validator");
 const mongoose = require("mongoose");
+const asyncHandler = require("../middlewares/asyncHandler.js");
 
-const sendResponse = (res, status, code, data, message) => {
-    res.status(code).json({ status, code, data, message });
-  };
+const sendResponse = require("../utils/sendResponse.js");
+const { status } = require("../utils/status.js");
+
 
   //getall
- const getallproducts =async (req, res) => {
-    try {
+ const getallproducts =  asyncHandler(async (req, res) => {
+
         const products = await Product.find();
-        res.status(200).json({
-            status: "SUCCESS",
-            code: 200,
-            data: products,
-          });    } 
-          catch (error) {
-            res.status(500).json({
-                status: "ERROR",
-                code: 500,
-                data: null,
-                message: error.message,
-              });    }
-}
+        if (products.length === 0) {
+          return sendResponse(
+            res,
+            status.Fail,
+            404,
+            { products: null },
+            "No products found"
+          );
+        }
+         sendResponse(
+          res,
+          status.Success,
+          200,
+           {products} , 
+            "Products retrieved successfully");
+  
+})
 
 //get by id
- const getsingleproducts = async (req, res) => {
+ const getsingleproducts = asyncHandler(async (req, res) => {
     const { productid } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(productid)) {
-        return res.status(400).json({
-            status: "FAIL",
-            code: 400,
-            data: { product: null },
-            message: "Invalid product ID format",
-          });    }
-   try {
+      return sendResponse(res, "FAIL", 400, { product: null }, "Invalid product ID format");
+    }
        let product = await Product.findById(req.params.productid);
        if (!product) {
-        return res.status(404).json({
-            status: "FAIL",
-            code: 404,
-            data: { product: null },
-            message: "Product not found",
-          });       }
-          res.status(200).json({
-            status: "SUCCESS",
-            code: 200,
-            data: {
-              id: product._id,
-              title: product.title,
-              describe: product.describe,
-              discount: product.discount,
-              price: product.price,
-              rate: product.rate,
-              img: product.img || "",
-              quantity: product.quantity,
-            },
-          });   } catch (error) {
-            res.status(500).json({
-                status: "ERROR",
-                code: 500,
-                data: null,
-                message: error.message,
-              });   }
- }
+        return sendResponse(res,
+          status.Fail,
+          404, 
+           { product: null },
+            "Product not found");
+      }
+      sendResponse(res, 
+      status.Success,
+         200,
+          {
+        id: product._id,
+        title: product.title,
+        describe: product.describe,
+        discount: product.discount,
+        price: product.price,
+        rate: product.rate,
+        img: product.img || "",
+        quantity: product.quantity,
+      }, "Product retrieved successfully");  })
+      
+ 
 
 
 //post
- const postproducts = async (req, res) => {
+ const postproducts = asyncHandler(async (req, res) => {
      const errors = validationResult(req);
      if (!errors.isEmpty()) {
-        return res.status(400).json({
-            status: "FAIL",
-            code: 400,
-            data: { product: null },
-          });     }
+      return sendResponse(
+        res,
+        status.Fail,
+        400,
+          { product: null },
+           " sorry,Product  cant created successfull");
+    }
  
-     try {
- 
+    
          const newProduct = new Product(req.body);
          await newProduct.save();
-         res.status(200).json({
-            status: "SUCCESS",
-            code: 200,
-            data: {
-              id: newProduct._id,
-              title: newProduct.title,
-              describe: newProduct.describe,
-              discount: newProduct.discount,
-              price: newProduct.price,
-              rate: newProduct.rate,
-              img: newProduct.img || "",
-              quantity: newProduct.quantity,
-            },
-          });
-             } catch (error) {
-                res.status(500).json({
-                    status: "ERROR",
-                    code: 500,
-                    data: null,
-                    message: error.message,
-                  });
-                     }
- };
- 
+         sendResponse(res, 
+          status.Success,
+           200, {
+          id: newProduct._id,
+          title: newProduct.title,
+          describe: newProduct.describe,
+          discount: newProduct.discount,
+          price: newProduct.price,
+          rate: newProduct.rate,
+          img: newProduct.img || "",
+          quantity: newProduct.quantity,
+        }, "Product created successfully");
+             } )
+ //////////////////////////////////////////////////////////////////////////
  ///patchh
-const patchproducts = async (req,res)=>{
-    if (!mongoose.Types.ObjectId.isValid(req.params.productid)) {
-        return res.status(400).json({
-          status: "FAIL",
-          code: 400,
-          data: { product: null },
-          message: "Invalid product ID format",
-        });
-      } 
+const patchproducts =  asyncHandler(async (req,res)=>{
+  if (!mongoose.Types.ObjectId.isValid(req.params.productid)) {
+    return sendResponse(
+      res,
+      status.Fail,
+      400,
+      { product: null },
+      "Sorry, product update failed due to invalid ID format."
+    );
+  }
 
-  try{
+ 
   let product =  await Product.findById(req.params.productid);
   if (!product) {
-    return res.status(404).json({
-        status: "FAIL",
-        code: 404,
-        data: { product: null },
-        message: "Product not found",
-      });}
+    return sendResponse(
+      res,
+      status.Fail,
+      404,
+      { product: null },
+      "Product not found"
+    )} ;
 Object.assign(product, req.body);
 await product.save();
-res.status(200).json({
-    status: "SUCCESS",
-    code: 200,
-    data: {
-      id: product._id,
-      title: product.title,
-      describe: product.describe,
-      discount: product.discount,
-      price: product.price,
-      rate: product.rate,
-      img: product.img || "",
-      quantity: product.quantity,
-    },
-  });  }catch(error){
-    res.status(500).json({
-        status: "ERROR",
-        code: 500,
-        data: null,
-        message: error.message,
-      });
-  }
-}
+return sendResponse(
+  res,
+  status.Success,
+  200,
+  {
+    id: product._id,
+    title: product.title,
+    describe: product.describe,
+    discount: product.discount,
+    price: product.price,
+    rate: product.rate,
+    img: product.img || "",
+    quantity: product.quantity,
+  },
+  "Product updated successfully"
+);
+})
+/////////////////////////////////////////
 ///put
- const putproducts = async (req,res)=>{
+ const putproducts =  asyncHandler(async (req,res)=>{
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({
-            status: "FAIL",
-            code: 400,
-            data: { product: null },
-            message: errors.array().map(err => err.msg).join(", "),
-          });    }
+      return sendResponse(
+        res,
+        status.Fail,
+        400,
+        { product: null },
+        errors.array().map((err) => err.msg).join(", ")
+      );   }
           if (!mongoose.Types.ObjectId.isValid(req.params.productid)) {
-            return res.status(400).json({
-              status: "FAIL",
-              code: 400,
-              data: { product: null },
-              message: "Invalid product ID format",
-            });
+            return sendResponse(
+              res,
+              status.Fail,
+              400,
+              { product: null },
+              "Invalid product ID format"
+            );
           }
-    try{
+    
     let updtedproduct =  await Product.findByIdAndUpdate(req.params.productid , req.body ,  { new: true, overwrite: true, runValidators: true });
     if (!updtedproduct) {
-        return res.status(404).json({
-            status: "FAIL",
-            code: 404,
-            data: { product: null },
-            message: "Product not found",
-          });  }
+      return sendResponse(
+        res,
+        status.Fail,
+        404,
+        { product: null },
+        "Product not found"
+      ); }
    
-          res.status(200).json({
-            status: "SUCCESS",
-            code: 200,
-            data: {
-              id: updatedProduct._id,
-              title: updatedProduct.title,
-              describe: updatedProduct.describe,
-              discount: updatedProduct.discount,
-              price: updatedProduct.price,
-              rate: updatedProduct.rate,
-              img: updatedProduct.img || "",
-              quantity: updatedProduct.quantity,
-            },
-          });  
-    }catch(error){
-        res.status(500).json({
-            status: "ERROR",
-            code: 500,
-            data: null,
-            message: error.message,
-          });
-    }
-  }
-  ///delete
-  const deleteproductsbyid =async(req ,res)=>{
+      return sendResponse(
+        res,
+        status.Success,
+        200,
+        {
+          id: updtedproduct._id,
+          title: updtedproduct.title,
+          describe: updtedproduct.describe,
+          discount: updtedproduct.discount,
+          price: updtedproduct.price,
+          rate: updtedproduct.rate,
+          img: updtedproduct.img || "",
+          quantity: updtedproduct.quantity,
+        },
+        "Product updated successfully"
+      );})
+  //////////////////////////////////////////
+  ///delete by id
+  const deleteproductsbyid =asyncHandler(async(req ,res)=>{
     if (!mongoose.Types.ObjectId.isValid(req.params.productid)) {
-        return res.status(400).json({
-          status: "FAIL",
-          code: 400,
-          data: { product: null },
-          message: "Invalid product ID format",
-        });
+      return sendResponse(res, status.Fail, 400, { product: null }, "Invalid product ID format");
+
       } 
-    try{
+    
     let deletedProduct =  await Product.findByIdAndDelete(req.params.productid);
-    if (!deletedProduct) {
         if (!deletedProduct) {
-            return res.status(404).json({
-              status: "FAIL",
-              code: 404,
-              data: { product: null },
-              message: "Product not found",
-            });
-          }    }
-          res.status(200).json({
-            status: "SUCCESS",
-            code: 200,
-            data: {
+          return sendResponse(res, status.Fail, 404, { product: null }, "Product not found");
+
+          }    
+          return sendResponse(
+            res,
+            status.Success,
+            200,
+            {
               id: deletedProduct._id,
               title: deletedProduct.title,
               describe: deletedProduct.describe,
@@ -235,17 +207,23 @@ res.status(200).json({
               img: deletedProduct.img || "",
               quantity: deletedProduct.quantity,
             },
-            message: "Product deleted successfully",
-          });
-            }catch (error) {
-                res.status(500).json({
-                  status: "ERROR",
-                  code: 500,
-                  data: null,
-                  message: error.message,
-                });
-              }
+            "Product deleted successfully"
+          );
+          
+  })
+/////delete all
+  const deleteproducts= asyncHandler(async(req ,res)=>{
+  
+       const deletedProductall = await Product.deleteMany({});
+       if (deletedProductall.deletedCount === 0) {
+        return sendResponse(res, status.Fail, 404, { products: null }, "No products found to delete");
+
+          }    
+          return sendResponse(res, status.Success, 200, { deletedCount: result.deletedCount }, "All products deleted successfully");
+
+            
   }
+  );
 
   module.exports={
     getallproducts,
@@ -253,5 +231,6 @@ res.status(200).json({
     postproducts,
     patchproducts,
     putproducts,
-    deleteproductsbyid
+    deleteproductsbyid,
+    deleteproducts
   }
