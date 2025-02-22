@@ -15,7 +15,6 @@ const productcontroller = require('./controllers/product.controllers.js')
 
 const app = express();
 const { check, validationResult } = require("express-validator");
-
 mongoose
   .connect(URLDB)
   .then(() => {

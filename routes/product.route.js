@@ -1,39 +1,16 @@
 const express = require("express");
 const { check,validationResult } = require("express-validator");
 const productcontroller= require('../controllers/product.controllers')
-
+const  validateschema=require('../middlewares/validateproduct')
 const router = express.Router();
-router.get('/',productcontroller.getallproducts);
+router.route('/')
+    .get(productcontroller.getallproducts)
+    .post(validateschema, productcontroller.postproducts);
 
-
-router.get('/:productid', productcontroller.getsingleproducts)
-
-
-
-router.post(
-  "/",
-  [
-    check("title", "Title is required").notEmpty(),
-    check("price", "Price is required and must be a number").isNumeric(),
-    check("describe", "Description is required").notEmpty(),
-    check("rate", "Rate is required and must be a number").isNumeric(),
-    check("discount", "Discount is required and must be a number").isNumeric(),
-    check("quantity", "Quantity is required and must be a number").isNumeric(),
-  ],productcontroller.postproducts
- 
-);
-
-router.patch("/:productid",productcontroller.patchproducts)
-
-router.put("/api/products/:productid", [
-  check("title", "Title is required").notEmpty(),
-  check("price", "Price is required and must be a number").isNumeric(),
-  check("describe", "Description is required").notEmpty(),
-  check("rate", "Rate is required and must be a number").isNumeric(),
-  check("discount", "Discount is required and must be a number").isNumeric(),
-  check("quantity", "Quantity is required and must be a number").isNumeric(),
-],productcontroller.putproducts)
- 
-router.delete("/:productid" ,productcontroller.deleteproductsbyid )
+  router.route('/:productid')
+.get(  productcontroller.getsingleproducts)
+.patch( productcontroller.patchproducts)
+ .put(validateschema,productcontroller.putproducts)
+ .delete( productcontroller.deleteproductsbyid )
 
 module.exports= router
