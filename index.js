@@ -23,3 +23,14 @@ app.use(errorHandler);
 app.listen(4000, () => {
   console.log("Server is listening on port 4000");
 });
+
+//For unKnown Error
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception! Shutting down...", err);
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled Rejection! Shutting down...", err);
+  server.close(() => process.exit(1));
+});
