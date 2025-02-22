@@ -18,8 +18,8 @@ const validateShipmentInfoSchema = async (req, res, next) => {
         if (!validator.isMongoId(user)) return sendResponse(res, "FAIL", 400, { shipment: null }, "Usermust be a valid MongoId");
         if (!validator.isAlpha(city)) return sendResponse(res, "FAIL", 400, { shipment: null }, "City must be a string");
         if (!validator.isAlpha(state)) return sendResponse(res, "FAIL", 400, { shipment: null }, "State must be a string");
-        if (!validator.isAlpha(street)) return sendResponse(res, "FAIL", 400, { shipment: null }, "Street must be a string");
         if (!validator.isNumeric(zipCode)) return sendResponse(res, "FAIL", 400, { shipment: null }, "Zip-Code must be a number");
+        if (!Array.isArray(phones) || phones.length === 0) return sendResponse(res, "FAIL", 400, { shipment: null }, "Phones must be an array and not empty");
 
         // Existence validation
         const userExist = await mongoose.model('User').exists({ _id: user });

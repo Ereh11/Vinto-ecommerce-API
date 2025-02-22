@@ -85,9 +85,7 @@ const updateShipmentInfo = asyncHandler(async (req, res) => {
 });
 // PATCH shipmentInfo by ID
 const updatePartialyShipmentInfo = asyncHandler(async (req, res) => {
-    const shipmentInfo = await Shipment
-    Info.findByIdAndUpdate(req.params
-        .id, req.body, {
+    const shipmentInfo = await ShipmentInfo.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true,
         }
@@ -132,7 +130,7 @@ const deleteShipmentInfoByID = asyncHandler(async (req, res) => {
 // DELETE all shipmentInfo
 const deleteAllShipmentInfo = asyncHandler(async (req, res) => {
     const shipmentInfo = await ShipmentInfo.deleteMany();
-    if (!shipmentInfo) {
+    if (shipmentInfo.deletedCount === 0) {
         return sendResponse(
             res,
             status.Fail,
