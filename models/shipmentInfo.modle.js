@@ -1,5 +1,10 @@
 const mongoose = require("mongoose");
 const shipmentInfoSchema = new mongoose.Schema({ 
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+    },
     city: {
         type: String,
         required: true,
@@ -21,5 +26,6 @@ const shipmentInfoSchema = new mongoose.Schema({
         required: true,
     }],
 });
+
 const ShipmentInfo = mongoose.model("ShipmentInfo", shipmentInfoSchema);
 module.exports = { ShipmentInfo };

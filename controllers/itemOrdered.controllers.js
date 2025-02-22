@@ -140,10 +140,6 @@ const updatePartialyItemOrderedById = asyncHandler(async (req, res) => {
     );
 });
 
-
-
-
-
 module.exports = {
     createItemOrdered,
     getAllItemOrdered,

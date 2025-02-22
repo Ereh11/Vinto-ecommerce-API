@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const categoryRoutes = require("./routes/category.route.js");
 const itemOrderedRoutes = require("./routes/itemOrdered.route.js");
+const shipmentInfoRoutes = require("./routes/shipmentInfo.route.js");
 const errorHandler = require("./middlewares/errorHandler.js");
 const app = express();
 
@@ -25,6 +26,7 @@ app.use(express.json());
 
 app.use("/api/categories", categoryRoutes);
 app.use("/api/itemOrdered", itemOrderedRoutes);
+app.use("/api/shipmentInfo", shipmentInfoRoutes);
 app.use(errorHandler);
 
 app.listen(4000, () => {

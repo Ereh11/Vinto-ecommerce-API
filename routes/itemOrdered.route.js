@@ -13,4 +13,5 @@ router.route("/:id")
     .delete(validateItemID, itemOrderedController.deleteItemOrderedById)
     .put(validateItemID, validateItemOrderedSchema, itemOrderedController.updateItemOrderedById)
     .patch(validateItemID, validateItemOrderedSchema, itemOrderedController.updatePartialyItemOrderedById);
+    
 module.exports = router;
