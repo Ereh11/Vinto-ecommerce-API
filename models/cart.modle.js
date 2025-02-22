@@ -1,9 +1,8 @@
 const mongoose = require("mongoose");
-const { ItemOrdered } = require("./itemOrdered.modle");
 const cartSchema = new mongoose.Schema({
     ItemsOrdered: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: ItemOrdered,
+        ref: "ItemOrdered",
         required: true
     }],
     status: {
