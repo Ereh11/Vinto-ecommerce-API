@@ -9,3 +9,6 @@
 .prettierrc.toml
 .prettier.config.js
 .prettier.config.cjs
+
+.env
+node_modules
