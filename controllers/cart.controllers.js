@@ -124,18 +124,25 @@ exports.updateCart = asyncHandler(async (req, res) => {
     );
   }
 
-  // let total = populatedCart.ItemsOrdered.reduce((sum, item) => {
-  //   if (item.product && item.product.price) {
-  //     if (item.product.discount) {
-  //       return sum + (item.product.discount * item.quantity);
-  //     }
-  //     return sum + (item.product.price * item.quantity);
-  //   }
-  //   return sum;
-  // }, 0);
-  //
-  // populatedCart.total = total;
-  // await populatedCart.save();
+  const populatedCart = await Cart.findById(cart._id)
+    .populate({
+      path: 'ItemsOrdered',
+      populate: {
+        path: 'product'
+      }
+    });
+
+  let total = populatedCart.ItemsOrdered.reduce((sum, item) => {
+    if (item.product && item.product.price) {
+      const priceAfterDiscount = item.product.price * (1 - (item.product.discount / 100));
+      return sum + (priceAfterDiscount * item.quantity);
+    }
+    return sum;
+  }, 0);
+
+  populatedCart.total = total;
+  await populatedCart.save();
+
   sendResponse(
     res,
     status.Success,
@@ -161,6 +168,24 @@ exports.partialUpdateCart = asyncHandler(async (req, res) => {
     );
   }
 
+  const populatedCart = await Cart.findById(cart._id)
+    .populate({
+      path: 'ItemsOrdered',
+      populate: {
+        path: 'product'
+      }
+    });
+
+  let total = populatedCart.ItemsOrdered.reduce((sum, item) => {
+    if (item.product && item.product.price) {
+      const priceAfterDiscount = item.product.price * (1 - (item.product.discount / 100));
+      return sum + (priceAfterDiscount * item.quantity);
+    }
+    return sum;
+  }, 0);
+
+  populatedCart.total = total;
+  await populatedCart.save();
   sendResponse(
     res,
     status.Success,
