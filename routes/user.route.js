@@ -10,10 +10,10 @@ const {
   deleteAllUsers,
 } = require("../controllers/user.controllers");
 
-router.get("/", protectedRoute, getAllUsers);
+router.get("/", getAllUsers);
 router.get("/:id", getUser);
 router.put("/:id", updateUser);
-router.delete("/:id", deleteUser);
-router.delete("/", deleteAllUsers);
+// router.delete("/:id", deleteUser);
+// router.delete("/", deleteAllUsers);
 
 module.exports = router;

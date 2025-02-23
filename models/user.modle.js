@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
-
+const crypto = require("crypto");
+const UserOTPVerification = require("./UserOTPverification");
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -35,6 +36,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "this field is required"],
   },
+  verified: {
+    type: Boolean,
+    default: false,
+  },
+  passwordResetToken: String,
+  passwordResetExpires: Date,
 });
 
 userSchema.pre("save", async function (next) {
@@ -43,7 +50,20 @@ userSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, 12);
   this.confirmPassword = undefined;
   next();
+  passwordResetExpires = Date;
 });
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+  return resetToken;
+};
 
 const User = mongoose.model("User", userSchema);
 

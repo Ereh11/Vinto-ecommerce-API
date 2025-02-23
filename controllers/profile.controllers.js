@@ -1,5 +1,6 @@
 // Controllers for profile
 const Profile = require("../models/profile.modle");
+const User = require("../models/user.modle");
 
 const getProfile = async (req, res) => {
   try {
@@ -84,18 +85,32 @@ const updateProfile = async (req, res) => {
 };
 
 const deleteProfile = async (req, res) => {
-  const profile = await Profile.findByIdAndDelete(req.params.id);
-  if (!profile) {
-    return res.status(404).json({
+  try {
+    const profile = await Profile.findOne({ user: req.params.id });
+    if (!profile) {
+      return res.status(404).json({
+        status: "error",
+        message: "Profile not found",
+      });
+    }
+
+    const userId = profile.user;
+
+    await Promise.all([
+      Profile.findByIdAndDelete(profile._id),
+      User.findByIdAndDelete(userId),
+    ]);
+
+    res.status(200).json({
+      status: "success",
+      message: "Profile and user deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
       status: "error",
-      message: "Profile not found",
+      message: error.message,
     });
   }
-  res.status(200).json({
-    status: "success",
-    data: profile,
-    message: "Profile deleted successfully",
-  });
 };
 
 module.exports = { getProfile, updateProfile, deleteProfile, createProfile };

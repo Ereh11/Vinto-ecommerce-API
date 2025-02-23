@@ -25,24 +25,6 @@ const getUser = async (req, res) => {
   }
 };
 
-// const createUser = async (req, res) => {
-//   try {
-//     const newUser = await User.create(req.body);
-//     const userWithoutPassword = newUser.toObject();
-//     delete userWithoutPassword.password;
-
-//     res.status(201).json({
-//       status: "success",
-//       data: userWithoutPassword,
-//     });
-//   } catch (error) {
-//     res.status(400).json({
-//       status: "error",
-//       message: error.message,
-//     });
-//   }
-// };
-
 const updateUser = async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(req.params.id, req.body, {
@@ -69,61 +51,21 @@ const updateUser = async (req, res) => {
   }
 };
 
-const deleteUser = async (req, res) => {
-  try {
-    const user = await User.findByIdAndDelete(req.params.id);
-
-    if (!user) {
-      return res.status(404).json({
-        status: "error",
-        message: "User not found",
-      });
-    }
-
-    res.status(204).json({
-      status: "success",
-      data: null,
-      message: "User deleted successfully",
-    });
-  } catch (error) {
-    res.status(400).json({
-      status: "error",
-      message: error.message,
-    });
-  }
-};
-const deleteAllUsers = async (req, res) => {
-  try {
-    await User.deleteMany();
-    res.status(204).json({
-      status: "success",
-      data: null,
-      message: "All users deleted successfully",
-    });
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
-// const register = async (req, res) => {
+// const deleteUser = async (req, res) => {
 //   try {
-//     const { username, email, password, role } = req.body;
+//     const user = await User.findByIdAndDelete(req.params.id);
 
-//     const salt = await bcrypt.genSalt(10);
-//     const hashedPassword = await bcrypt.hash(password, salt);
+//     if (!user) {
+//       return res.status(404).json({
+//         status: "error",
+//         message: "User not found",
+//       });
+//     }
 
-//     const newUser = await User.create({
-//       username,
-//       email,
-//       password: hashedPassword,
-//       role,
-//     });
-
-//     const userWithoutPassword = newUser.toObject();
-//     delete userWithoutPassword.password;
-
-//     res.status(201).json({
+//     res.status(204).json({
 //       status: "success",
-//       data: userWithoutPassword,
+//       data: null,
+//       message: "User deleted successfully",
 //     });
 //   } catch (error) {
 //     res.status(400).json({
@@ -132,47 +74,21 @@ const deleteAllUsers = async (req, res) => {
 //     });
 //   }
 // };
-
-// const login = async (req, res) => {
+// const deleteAllUsers = async (req, res) => {
 //   try {
-//     const { email, password } = req.body;
-
-//     const user = await User.findOne({ email });
-//     if (!user) {
-//       return res.status(401).json({
-//         status: "error",
-//         message: "Invalid email or password",
-//       });
-//     }
-
-//     const isValidPassword = await bcrypt.compare(password, user.password);
-//     if (!isValidPassword) {
-//       return res.status(401).json({
-//         status: "error",
-//         message: "Invalid email or password",
-//       });
-//     }
-
-//     const userWithoutPassword = user.toObject();
-//     delete userWithoutPassword.password;
-
-//     res.status(200).json({
+//     await User.deleteMany();
+//     res.status(204).json({
 //       status: "success",
-//       message: "Login successfully",
+//       data: null,
+//       message: "All users deleted successfully",
 //     });
 //   } catch (error) {
-//     res.status(400).json({
-//       status: "error",
-//       message: error.message,
-//     });
+//     res.status(400).json({ message: error.message });
 //   }
 // };
 
 module.exports = {
   getAllUsers,
   getUser,
-  //   createUser,
   updateUser,
-  deleteUser,
-  deleteAllUsers,
 };
