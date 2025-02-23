@@ -5,9 +5,9 @@ const { WishedList } = require("../models/wishedList.modle.js");
 
 // ----------------- Get All Wishlists (Admin) -----------------
 const getAllWishlists = asyncHandler(async (req, res) => {
-  const wishlists = await WishedList.find()
-    .populate("user")
-    .populate("products");
+  const wishlists = await WishedList.find({})
+    .populate("User")
+    .populate("Product");
   sendResponse(
     res,
     status.Success,
