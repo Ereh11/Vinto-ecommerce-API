@@ -104,69 +104,69 @@ const deleteAllUsers = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-const register = async (req, res) => {
-  try {
-    const { username, email, password, role } = req.body;
+// const register = async (req, res) => {
+//   try {
+//     const { username, email, password, role } = req.body;
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+//     const salt = await bcrypt.genSalt(10);
+//     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const newUser = await User.create({
-      username,
-      email,
-      password: hashedPassword,
-      role,
-    });
+//     const newUser = await User.create({
+//       username,
+//       email,
+//       password: hashedPassword,
+//       role,
+//     });
 
-    const userWithoutPassword = newUser.toObject();
-    delete userWithoutPassword.password;
+//     const userWithoutPassword = newUser.toObject();
+//     delete userWithoutPassword.password;
 
-    res.status(201).json({
-      status: "success",
-      data: userWithoutPassword,
-    });
-  } catch (error) {
-    res.status(400).json({
-      status: "error",
-      message: error.message,
-    });
-  }
-};
+//     res.status(201).json({
+//       status: "success",
+//       data: userWithoutPassword,
+//     });
+//   } catch (error) {
+//     res.status(400).json({
+//       status: "error",
+//       message: error.message,
+//     });
+//   }
+// };
 
-const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+// const login = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({
-        status: "error",
-        message: "Invalid email or password",
-      });
-    }
+//     const user = await User.findOne({ email });
+//     if (!user) {
+//       return res.status(401).json({
+//         status: "error",
+//         message: "Invalid email or password",
+//       });
+//     }
 
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) {
-      return res.status(401).json({
-        status: "error",
-        message: "Invalid email or password",
-      });
-    }
+//     const isValidPassword = await bcrypt.compare(password, user.password);
+//     if (!isValidPassword) {
+//       return res.status(401).json({
+//         status: "error",
+//         message: "Invalid email or password",
+//       });
+//     }
 
-    const userWithoutPassword = user.toObject();
-    delete userWithoutPassword.password;
+//     const userWithoutPassword = user.toObject();
+//     delete userWithoutPassword.password;
 
-    res.status(200).json({
-      status: "success",
-      message: "Login successfully",
-    });
-  } catch (error) {
-    res.status(400).json({
-      status: "error",
-      message: error.message,
-    });
-  }
-};
+//     res.status(200).json({
+//       status: "success",
+//       message: "Login successfully",
+//     });
+//   } catch (error) {
+//     res.status(400).json({
+//       status: "error",
+//       message: error.message,
+//     });
+//   }
+// };
 
 module.exports = {
   getAllUsers,
@@ -174,7 +174,5 @@ module.exports = {
   //   createUser,
   updateUser,
   deleteUser,
-  register,
-  login,
   deleteAllUsers,
 };

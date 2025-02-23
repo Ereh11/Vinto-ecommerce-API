@@ -1,20 +1,29 @@
-// Main file to start our API
-
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
-const URLDB =
-  "mongodb://Vintodevs:amj76CzcY4Ymqeqc@vintocluster-shard-00-00.frlbn.mongodb.net:27017,vintocluster-shard-00-01.frlbn.mongodb.net:27017,vintocluster-shard-00-02.frlbn.mongodb.net:27017/Vinto?ssl=true&replicaSet=atlas-7o5bfh-shard-0&authSource=admin&retryWrites=true&w=majority&appName=VintoCluster";
+// Construct MongoDB URI with the correct format
+const MONGODB_URI = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@vintocluster.frlbn.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`;
 
 const app = express();
 
-mongoose.connect(URLDB).then(() => {
-  console.log("Mongoose Connect Successfully");
-});
-const userRouter = require("./routes/user.route");
+// Connect to MongoDB
+mongoose
+  .connect(MONGODB_URI)
+  .then(() => {
+    console.log("Connected to MongoDB Atlas successfully");
+  })
+  .catch((err) => {
+    console.error("MongoDB connection error:", err);
+  });
+
+// Middleware
 app.use(cors());
 app.use(express.json());
+
+// Routes
+const userRouter = require("./routes/user.route");
 const authRouter = require("./routes/authentication/user.route");
 const profileRouter = require("./routes/profile.route");
 
@@ -24,6 +33,8 @@ app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/profile", profileRouter);
 
-app.listen(4000, () => {
-  console.log("Server is listining on port 4000");
+// Start server
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`Server is listening on port ${PORT}`);
 });
