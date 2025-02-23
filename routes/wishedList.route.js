@@ -5,8 +5,17 @@ const validateIds = require("../middlewares/validateIds");
 
 router.get("/", wishlistController.getAllWishlists);
 router.get("/:userId", validateIds, wishlistController.getWishlistByUserId);
-router.post("/", validateIds, wishlistController.addToWishlist);
-router.delete("/item", validateIds, wishlistController.removeItemFromWishlist);
+router.get(
+  "/:userId/:productId",
+  validateIds,
+  wishlistController.getWishlistItem
+);
+router.post("/", wishlistController.addToWishlist);
+router.delete(
+  "/:userId/:productId",
+  validateIds,
+  wishlistController.removeItemFromWishlist
+);
 router.delete("/:userId", validateIds, wishlistController.clearWishlist);
 
 module.exports = router;

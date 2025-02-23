@@ -3,7 +3,7 @@ const sendResponse = require("../utils/sendResponse");
 const { status } = require("../utils/status");
 const { WishedList } = require("../models/wishedList.modle.js");
 
-//dh ll admin
+// ----------------- Get All Wishlists (Admin) -----------------
 const getAllWishlists = asyncHandler(async (req, res) => {
   const wishlists = await WishedList.find()
     .populate("user")
@@ -17,6 +17,7 @@ const getAllWishlists = asyncHandler(async (req, res) => {
   );
 });
 
+// ----------------- Get Wishlist by User ID -----------------
 const getWishlistByUserId = asyncHandler(async (req, res) => {
   const { userId } = req.params;
   const wishlist = await WishedList.findOne({ user: userId }).populate(
@@ -28,7 +29,7 @@ const getWishlistByUserId = asyncHandler(async (req, res) => {
       res,
       status.Fail,
       400,
-      { wishlist: null },
+      { wishlist: [] },
       "No wishlist found for this user"
     );
   }
@@ -42,31 +43,76 @@ const getWishlistByUserId = asyncHandler(async (req, res) => {
   );
 });
 
-const addToWishlist = asyncHandler(async (req, res) => {
-  const { userId, productId } = req.body;
+// ----------------- Get Single Wishlist Item -----------------
+const getWishlistItem = asyncHandler(async (req, res) => {
+  const { userId, productId } = req.params;
+  const wishlist = await WishedList.findOne({
+    user: userId,
+    products: productId,
+  }).populate({
+    path: "products",
+    match: { _id: productId },
+  });
 
-  await WishedList.updateOne(
-    { user: userId },
-    { $addToSet: { products: productId } },
-    { upsert: true }
-  );
+  if (!wishlist || !wishlist.products.length) {
+    return sendResponse(
+      res,
+      status.Fail,
+      400,
+      { wished: null },
+      "Item not found in wishlist"
+    );
+  }
 
   sendResponse(
     res,
     status.Success,
     200,
-    { added: true },
+    { product: wishlist.products[0] },
+    "Wishlist item fetched successfully"
+  );
+});
+
+// ----------------- Add Item to Wishlist -----------------
+const addToWishlist = asyncHandler(async (req, res) => {
+  const { userId, productId } = req.body;
+  const updatedWishlist = await WishedList.findOneAndUpdate(
+    { user: userId },
+    { $addToSet: { products: productId } },
+    { upsert: true, new: true }
+  ).populate("products");
+
+  sendResponse(
+    res,
+    status.Success,
+    200,
+    { wishlist: updatedWishlist },
     "Item added to wishlist"
   );
 });
 
+// ----------------- Remove Item from Wishlist -----------------
 const removeItemFromWishlist = asyncHandler(async (req, res) => {
-  const { userId, productId } = req.body;
-
-  await WishedList.updateOne(
+  const { userId, productId } = req.params;
+  const result = await WishedList.updateOne(
     { user: userId },
     { $pull: { products: productId } }
   );
+
+  if (result.modifiedCount === 0) {
+    return sendResponse(
+      res,
+      status.Fail,
+      400,
+      { removed: false },
+      "Item not found in wishlist"
+    );
+  }
+
+  const updatedWishlist = await WishedList.findOne({ user: userId });
+  if (!updatedWishlist || updatedWishlist.products.length === 0) {
+    await WishedList.deleteOne({ user: userId });
+  }
 
   sendResponse(
     res,
@@ -77,17 +123,29 @@ const removeItemFromWishlist = asyncHandler(async (req, res) => {
   );
 });
 
+// ----------------- Clear Wishlist -----------------
 const clearWishlist = asyncHandler(async (req, res) => {
   const { userId } = req.params;
+  const wishlist = await WishedList.findOne({ user: userId });
+
+  if (!wishlist) {
+    return sendResponse(
+      res,
+      status.Fail,
+      400,
+      { cleared: false },
+      "No wishlist found to clear"
+    );
+  }
 
   await WishedList.deleteOne({ user: userId });
-
   sendResponse(res, status.Success, 200, { cleared: true }, "Wishlist cleared");
 });
 
 module.exports = {
   getAllWishlists,
   getWishlistByUserId,
+  getWishlistItem,
   addToWishlist,
   removeItemFromWishlist,
   clearWishlist,
