@@ -5,9 +5,16 @@ const { WishedList } = require("../models/wishedList.modle.js");
 
 // ----------------- Get All Wishlists (Admin) -----------------
 const getAllWishlists = asyncHandler(async (req, res) => {
-  const wishlists = await WishedList.find({})
-    .populate("User")
-    .populate("Product");
+  const wishlists = await WishedList.find().populate("products");
+  if (!wishlists.length) {
+    return sendResponse(
+      res,
+      status.Fail,
+      404,
+      { wishlists: [] },
+      "No wishlists found"
+    );
+  }
   sendResponse(
     res,
     status.Success,
@@ -75,20 +82,15 @@ const getWishlistItem = asyncHandler(async (req, res) => {
 
 // ----------------- Add Item to Wishlist -----------------
 const addToWishlist = asyncHandler(async (req, res) => {
-  const { userId, productId } = req.body;
+  const { user, products } = req.body;
+ 
   const updatedWishlist = await WishedList.findOneAndUpdate(
-    { user: userId },
-    { $addToSet: { products: productId } },
-    { upsert: true, new: true }
+    { user },
+    { $addToSet: { products: { $each: products } } },
+    { new: true, upsert: true }
   ).populate("products");
 
-  sendResponse(
-    res,
-    status.Success,
-    200,
-    { wishlist: updatedWishlist },
-    "Item added to wishlist"
-  );
+  sendResponse(res, status.Success, 200, { wishlist: updatedWishlist }, "Item added to wishlist");
 });
 
 // ----------------- Remove Item from Wishlist -----------------
