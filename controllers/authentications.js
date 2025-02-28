@@ -1,6 +1,6 @@
 const User = require("../models/user.modle");
 const UserOTPVerification = require("../models/UserOTPverification");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/email");
 const crypto = require("crypto");
