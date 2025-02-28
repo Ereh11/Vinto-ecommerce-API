@@ -47,7 +47,6 @@ async function uploadFile(image) {
   }
 }
 
-
 // uploadFile();
 
 
@@ -57,12 +56,11 @@ async function deleteFile() {
       fileId: '1-EGhfjtwLORxdopMHl6Bm7uiY5e0_rcd',
     })
     console.log(response.data, response.status)
+
   } catch (err) {
     console.log(err.message);
   }
 }
-
-
 // deleteFile();
 
 async function generatePublicUrl(image) {
@@ -84,5 +82,3 @@ async function generatePublicUrl(image) {
 }
 
 module.exports = generatePublicUrl;
-
-
