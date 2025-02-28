@@ -1,3 +1,4 @@
+require("dotenv").config();
 const mongoose = require("mongoose");
 const generatePublicUrl = require("./utils/drive/pix_drive.js");
 const { Category } = require("./models/category.modle.js"); // Import using destructuring
@@ -5,7 +6,7 @@ const { Category } = require("./models/category.modle.js"); // Import using dest
 const connectDB = async () => {
   try {
     await mongoose.connect(
-      "mongodb+srv://Vintodevs:amj76CzcY4Ymqeqc@vintocluster.frlbn.mongodb.net/?retryWrites=true&w=majority",
+      `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.CLUSTER_NAME}:27017,${process.env.CLUSTER_NAME}:27017,${process.env.CLUSTER_NAME}:27017/${process.env.DB_NAME}?ssl=true&replicaSet=atlas-7o5bfh-shard-0&authSource=admin&retryWrites=true&w=majority&appName=${process.env.APP_NAME};`,
       {
         useNewUrlParser: true,
         useUnifiedTopology: true,
