@@ -1,5 +1,4 @@
 require("dotenv").config();
-require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -8,6 +7,9 @@ const likeRoutes = require("./routes/itemLiked.route.js");
 const wishlistRoutes = require("./routes/wishedList.route.js");
 const itemOrderedRoutes = require("./routes/itemOrdered.route.js");
 const shipmentInfoRoutes = require("./routes/shipmentInfo.route.js");
+const userRouter = require("./routes/user.route");
+const authRouter = require("./routes/authentication/user.route");
+const profileRouter = require("./routes/profile.route");
 const errorHandler = require("./middlewares/errorHandler.js");
 const app = express();
 
@@ -15,9 +17,7 @@ const MONGODB_URI = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSW
 
 // Connect to MongoDB
 mongoose
-
   .connect(MONGODB_URI)
-
   .then(() => {
     console.log("Connected to MongoDB Atlas successfully");
   })
@@ -33,10 +33,6 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-const userRouter = require("./routes/user.route");
-const authRouter = require("./routes/authentication/user.route");
-const profileRouter = require("./routes/profile.route");
-
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/profile", profileRouter);
@@ -52,11 +48,6 @@ app.listen(4000, () => {
 });
 
 //For unKnown Error
-process.on("uncaughtException", (err) => {
-  console.error("Uncaught Exception! Shutting down...", err);
-  process.exit(1);
-});
-
 process.on("unhandledRejection", (err) => {
   console.error("Unhandled Rejection! Shutting down...", err);
   server.close(() => process.exit(1));
