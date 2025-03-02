@@ -2,12 +2,24 @@ const asyncHandler = require("../middlewares/asyncHandler");
 const sendResponse = require("../utils/sendResponse");
 const { status } = require("../utils/status");
 const { WishedList } = require("../models/wishedList.modle.js");
+const { ItemLiked } = require("../models/itemLiked.modle.js");
 
 // ----------------- Get All Wishlists (Admin) -----------------
 const getAllWishlists = asyncHandler(async (req, res) => {
   const wishlists = await WishedList.find({})
     .populate("user")
     .populate("products");
+
+  if (!wishlists.length) {
+    return sendResponse(
+      res,
+      status.Fail,
+      404,
+      { wishlists: [] },
+      "No wishlists found"
+    );
+  }
+
   sendResponse(
     res,
     status.Success,
@@ -76,11 +88,31 @@ const getWishlistItem = asyncHandler(async (req, res) => {
 // ----------------- Add Item to Wishlist -----------------
 const addToWishlist = asyncHandler(async (req, res) => {
   const { userId, productId } = req.body;
+  const existingWishlist = await WishedList.findOne({
+    user: userId,
+    products: productId,
+  });
+
+  if (existingWishlist) {
+    return sendResponse(
+      res,
+      status.Fail,
+      400,
+      { added: false },
+      "Item already in wishlist"
+    );
+  }
   const updatedWishlist = await WishedList.findOneAndUpdate(
     { user: userId },
     { $addToSet: { products: productId } },
     { upsert: true, new: true }
   ).populate("products");
+
+  await ItemLiked.findOneAndUpdate(
+    { user: userId, product: productId },
+    { user: userId, product: productId },
+    { upsert: true }
+  );
 
   sendResponse(
     res,
@@ -108,6 +140,8 @@ const removeItemFromWishlist = asyncHandler(async (req, res) => {
       "Item not found in wishlist"
     );
   }
+
+  await ItemLiked.deleteOne({ user: userId, product: productId });
 
   const updatedWishlist = await WishedList.findOne({ user: userId });
   if (!updatedWishlist || updatedWishlist.products.length === 0) {
@@ -138,13 +172,28 @@ const clearWishlist = asyncHandler(async (req, res) => {
     );
   }
 
+  await ItemLiked.deleteMany({ user: userId });
+
   await WishedList.deleteOne({ user: userId });
   sendResponse(res, status.Success, 200, { cleared: true }, "Wishlist cleared");
 });
 
 // ----------------- Delete All Wishlists (Admin) -----------------
 const deleteAllWishlists = asyncHandler(async (req, res) => {
+  const existingWishlists = await WishedList.countDocuments({});
+
+  if (existingWishlists === 0) {
+    return sendResponse(
+      res,
+      status.Fail,
+      404,
+      { deleted: false },
+      "No wishlists found to delete"
+    );
+  }
+
   await WishedList.deleteMany({});
+  await ItemLiked.deleteMany({});
   sendResponse(
     res,
     status.Success,
@@ -159,9 +208,11 @@ const updateWishlist = asyncHandler(async (req, res) => {
   const { userId } = req.params;
   const { products } = req.body;
 
+  const uniqueProducts = [...new Set(products)];
+
   const updatedWishlist = await WishedList.findOneAndUpdate(
     { user: userId },
-    { products }, //all
+    { products: uniqueProducts },
     { new: true }
   ).populate("products");
 
@@ -174,6 +225,13 @@ const updateWishlist = asyncHandler(async (req, res) => {
       "No wishlist found for this user"
     );
   }
+
+  await ItemLiked.deleteMany({ user: userId });
+  const likedItems = uniqueProducts.map((product) => ({
+    user: userId,
+    product,
+  }));
+  await ItemLiked.insertMany(likedItems);
 
   sendResponse(
     res,
@@ -191,9 +249,29 @@ const patchWishlist = asyncHandler(async (req, res) => {
 
   let updateQuery;
   if (action === "add") {
+    const existingWishlist = await WishedList.findOne({
+      user: userId,
+      products: productId,
+    });
+
+    if (existingWishlist) {
+      return sendResponse(
+        res,
+        status.Fail,
+        400,
+        { added: false },
+        "Item already in wishlist"
+      );
+    }
     updateQuery = { $addToSet: { products: productId } };
+    likedAction = ItemLiked.findOneAndUpdate(
+      { user: userId, product: productId },
+      { user: userId, product: productId },
+      { upsert: true }
+    );
   } else if (action === "remove") {
     updateQuery = { $pull: { products: productId } };
+    likedAction = ItemLiked.deleteOne({ user: userId, product: productId });
   } else {
     return sendResponse(
       res,
@@ -219,6 +297,8 @@ const patchWishlist = asyncHandler(async (req, res) => {
       "No wishlist found for this user"
     );
   }
+
+  await likedAction;
 
   sendResponse(
     res,

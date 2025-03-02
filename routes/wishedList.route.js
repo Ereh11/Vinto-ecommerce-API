@@ -3,13 +3,13 @@ const router = express.Router();
 const wishlistController = require("../controllers/wishedList.controller.js");
 const validateIds = require("../middlewares/validateIds");
 
-//Get all wishlists (Admin)
+//get all wishlists (Admin)
 router.get("/", wishlistController.getAllWishlists);
 
-//Get wishlist by user ID
+//get wishlist by user ID
 router.get("/:userId", validateIds, wishlistController.getWishlistByUserId);
 
-//Get single item
+//get single item
 router.get(
   "/:userId/:productId",
   validateIds,
@@ -35,7 +35,7 @@ router.delete(
 //delete all wishlist
 router.delete("/:userId", validateIds, wishlistController.clearWishlist);
 
-//Delete all wishlists (Admin)
+//delete all wishlists (Admin)
 router.delete("/", wishlistController.deleteAllWishlists);
 
 module.exports = router;

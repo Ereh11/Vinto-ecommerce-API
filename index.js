@@ -26,7 +26,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/categories", categoryRoutes);
-app.use("/api/likes", likeRoutes);
+app.use("/api/liked", likeRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/itemOrdered", itemOrderedRoutes);
 app.use("/api/shipmentInfo", shipmentInfoRoutes);
