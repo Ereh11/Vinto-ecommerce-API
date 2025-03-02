@@ -6,8 +6,8 @@ const { WishedList } = require("../models/wishedList.modle.js");
 // ----------------- Get All Wishlists (Admin) -----------------
 const getAllWishlists = asyncHandler(async (req, res) => {
   const wishlists = await WishedList.find({})
-    .populate("User")
-    .populate("Product");
+    .populate("user")
+    .populate("products");
   sendResponse(
     res,
     status.Success,
@@ -142,6 +142,93 @@ const clearWishlist = asyncHandler(async (req, res) => {
   sendResponse(res, status.Success, 200, { cleared: true }, "Wishlist cleared");
 });
 
+// ----------------- Delete All Wishlists (Admin) -----------------
+const deleteAllWishlists = asyncHandler(async (req, res) => {
+  await WishedList.deleteMany({});
+  sendResponse(
+    res,
+    status.Success,
+    200,
+    { deleted: true },
+    "All wishlists deleted successfully"
+  );
+});
+
+// ----------------- Update Wishlist (PUT) -----------------
+const updateWishlist = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const { products } = req.body;
+
+  const updatedWishlist = await WishedList.findOneAndUpdate(
+    { user: userId },
+    { products }, //all
+    { new: true }
+  ).populate("products");
+
+  if (!updatedWishlist) {
+    return sendResponse(
+      res,
+      status.Fail,
+      400,
+      { updated: false },
+      "No wishlist found for this user"
+    );
+  }
+
+  sendResponse(
+    res,
+    status.Success,
+    200,
+    { wishlist: updatedWishlist },
+    "Wishlist updated successfully"
+  );
+});
+
+// ----------------- Partially Update Wishlist (PATCH) -----------------
+const patchWishlist = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const { productId, action } = req.body;
+
+  let updateQuery;
+  if (action === "add") {
+    updateQuery = { $addToSet: { products: productId } };
+  } else if (action === "remove") {
+    updateQuery = { $pull: { products: productId } };
+  } else {
+    return sendResponse(
+      res,
+      status.Fail,
+      400,
+      { updated: false },
+      "Invalid action. Use 'add' or 'remove'."
+    );
+  }
+
+  const updatedWishlist = await WishedList.findOneAndUpdate(
+    { user: userId },
+    updateQuery,
+    { new: true }
+  ).populate("products");
+
+  if (!updatedWishlist) {
+    return sendResponse(
+      res,
+      status.Fail,
+      400,
+      { updated: false },
+      "No wishlist found for this user"
+    );
+  }
+
+  sendResponse(
+    res,
+    status.Success,
+    200,
+    { wishlist: updatedWishlist },
+    `Product ${action}ed successfully`
+  );
+});
+
 module.exports = {
   getAllWishlists,
   getWishlistByUserId,
@@ -149,4 +236,7 @@ module.exports = {
   addToWishlist,
   removeItemFromWishlist,
   clearWishlist,
+  deleteAllWishlists,
+  updateWishlist,
+  patchWishlist,
 };
