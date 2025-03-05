@@ -6,15 +6,16 @@ const validateItemID = require("../middlewares/validateItemID.js");
 
 
 router.route("/")
-  .post(validateCart, cartController.createCart)
-  .get(cartController.getAllCart)
-  .delete(cartController.deleteAllCarts)
+    .post(validateCart, cartController.createCart)
+    .get(cartController.getAllCart)
+    .delete(cartController.deleteAllCarts)
 
 router.route("/:id")
-  .get(validateItemID, cartController.getCart)
-  .put(validateItemID, cartController.updateCart)
-  .patch(validateItemID, cartController.partialUpdateCart)
-  .delete(validateItemID, cartController.deleteCart)
+    .post(validateItemID, cartController.addToCart)
+    .get(validateItemID, cartController.getMyCart)
+    .put(validateItemID, cartController.updateCart)
+    .patch(validateItemID, cartController.partialUpdateCart)
+    .delete(validateItemID, cartController.deleteCart)
 module.exports = router;
 
 
