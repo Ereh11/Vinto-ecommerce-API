@@ -27,12 +27,19 @@ const drive = google.drive({
 
 // const filePath = path.join(__dirname, 'test.jpg');
 
+function generateRandomImageName(extension = 'jpg') {
+  const randomNumber = Math.floor(Math.random() * 1000000);
+  const timestamp = Date.now();
+  return `img_${timestamp}_${randomNumber}.${extension}`;
+}
+
+
 async function uploadFile(image) {
   const filePath = path.join(__dirname, `../../${image}`);
   try {
     const response = await drive.files.create({
       requestBody: {
-        name: image,
+        name: generateRandomImageName(),
         mimeType: 'image/jpg',
         parents: ['17F3zxq0a8XL4WgJFk_P1muQn_ql54l4P'],
       },
