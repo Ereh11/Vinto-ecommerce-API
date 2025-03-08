@@ -1,9 +1,11 @@
+
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const categoryRoutes = require("./routes/category.route.js");
 const itemOrderedRoutes = require("./routes/itemOrdered.route.js");
+const cartRoutes = require("./routes/cart.route.js");
 const shipmentInfoRoutes = require("./routes/shipmentInfo.route.js");
 const errorHandler = require("./middlewares/errorHandler.js");
 const app = express();
@@ -29,6 +31,7 @@ mongoose
 app.use(cors());
 app.use(express.json());
 
+
 // Routes
 const userRouter = require("./routes/user.route");
 const authRouter = require("./routes/authentication/user.route");
@@ -39,6 +42,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/itemOrdered", itemOrderedRoutes);
+app.use("/api/cart", cartRoutes);
 app.use("/api/shipmentInfo", shipmentInfoRoutes);
 app.use(errorHandler);
 
