@@ -6,7 +6,6 @@ const sendResponse = (res, status, code, data, msg) => {
     message: { text: msg },
   });
 };
-
 module.exports = sendResponse;
 
 
