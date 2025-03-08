@@ -1,12 +1,17 @@
-
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const categoryRoutes = require("./routes/category.route.js");
+const likeRoutes = require("./routes/itemLiked.route.js");
+const wishlistRoutes = require("./routes/wishedList.route.js");
 const itemOrderedRoutes = require("./routes/itemOrdered.route.js");
 const cartRoutes = require("./routes/cart.route.js");
 const shipmentInfoRoutes = require("./routes/shipmentInfo.route.js");
+const userRouter = require("./routes/user.route");
+const authRouter = require("./routes/authentication/user.route");
+const productRoutes = require("./routes/product.route.js")
+const profileRouter = require("./routes/profile.route");
 const errorHandler = require("./middlewares/errorHandler.js");
 const app = express();
 
@@ -14,14 +19,9 @@ const MONGODB_URI = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSW
 
 // Connect to MongoDB
 mongoose
-
   .connect(MONGODB_URI)
-
   .then(() => {
     console.log("Connected to MongoDB Atlas successfully");
-  })
-  .catch((err) => {
-    console.log(err);
   })
   .catch((err) => {
     console.error("MongoDB connection error:", err);
@@ -33,20 +33,29 @@ app.use(express.json());
 
 
 // Routes
-const userRouter = require("./routes/user.route");
-const authRouter = require("./routes/authentication/user.route");
-const profileRouter = require("./routes/profile.route");
-
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/likes", likeRoutes);
+app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/itemOrdered", itemOrderedRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/shipmentInfo", shipmentInfoRoutes);
+app.use("/api/products", productRoutes);
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`Server is listening on port ${PORT}`);
+
+app.all('*', (req, res) => {
+  sendResponse(res, status.fail, 404, null, `Route '${req.originalUrl}' not found`);
+});
+
+app.listen(4000, () => {
+  console.log("Server is listening on port 4000");
+});
+
+//For unKnown Error
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled Rejection! Shutting down...", err);
+  server.close(() => process.exit(1));
 });
