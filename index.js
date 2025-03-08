@@ -11,6 +11,7 @@ const cartRoutes = require("./routes/cart.route.js");
 const shipmentInfoRoutes = require("./routes/shipmentInfo.route.js");
 const userRouter = require("./routes/user.route");
 const authRouter = require("./routes/authentication/user.route");
+const productRouter = require("./routes/product.route");
 const profileRouter = require("./routes/profile.route");
 const errorHandler = require("./middlewares/errorHandler.js");
 const app = express();
@@ -45,6 +46,7 @@ app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/itemOrdered", itemOrderedRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/shipmentInfo", shipmentInfoRoutes);
+app.use("/api/products", productRouter);
 app.use(errorHandler);
 
 
