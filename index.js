@@ -1,3 +1,4 @@
+
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
@@ -6,6 +7,7 @@ const categoryRoutes = require("./routes/category.route.js");
 const likeRoutes = require("./routes/itemLiked.route.js");
 const wishlistRoutes = require("./routes/wishedList.route.js");
 const itemOrderedRoutes = require("./routes/itemOrdered.route.js");
+const cartRoutes = require("./routes/cart.route.js");
 const shipmentInfoRoutes = require("./routes/shipmentInfo.route.js");
 const userRouter = require("./routes/user.route");
 const authRouter = require("./routes/authentication/user.route");
@@ -32,6 +34,7 @@ mongoose
 app.use(cors());
 app.use(express.json());
 
+
 // Routes
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
@@ -40,6 +43,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/likes", likeRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/itemOrdered", itemOrderedRoutes);
+app.use("/api/cart", cartRoutes);
 app.use("/api/shipmentInfo", shipmentInfoRoutes);
 app.use(errorHandler);
 

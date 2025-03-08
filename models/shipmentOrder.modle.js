@@ -22,4 +22,5 @@ const shipmentOrderSchema = new mongoose.Schema({
     },
 });
 const ShipmentOrder = mongoose.model("ShipmentOrder", shipmentOrderSchema);
+
 module.exports = { ShipmentOrder };
