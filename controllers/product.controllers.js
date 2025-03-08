@@ -41,7 +41,7 @@ const getallproducts = async (req, res, next) => {
         next(err);
     }
 }
-//Get by id
+//Get by Id
 const getsingleproducts = async (req, res, next) => {
     try {
         const { productid } = req.params;
@@ -74,6 +74,9 @@ const postproducts = async (req, res, next) => {
         if (!errors.isEmpty()) {
             return next(new appError(errors.array().map((err) => err.msg).join(", "), 400));
         }
+        if (!mongoose.Types.ObjectId.isValid(req.params.productid)) {
+            return next(new appError("Invalid product ID format", 400));
+        }
         const { title, describe, discount, price, rate, img, quantity } = req.body;
         const newProduct = new Product({
             title,
@@ -97,27 +100,17 @@ const postproducts = async (req, res, next) => {
     }
 };
 //patch
-const patchproducts = asyncHandler(async (req, res) => {
-    if (!mongoose.Types.ObjectId.isValid(req.params.productid)) {
-        return sendResponse(
-            res,
-            status.Fail,
-            400,
-            { product: null },
-            "Sorry, product update failed due to invalid ID format."
-        );
+const patchproducts = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return next(new appError(errors.array().map((err) => err.msg).join(", "), 400));
     }
-
-
+    if (!mongoose.Types.ObjectId.isValid(req.params.productid)) {
+        return next(new appError("Invalid product ID format", 400));
+    }
     let product = await Product.findById(req.params.productid);
     if (!product) {
-        return sendResponse(
-            res,
-            status.Fail,
-            404,
-            { product: null },
-            "Product not found"
-        )
+        return next(new appError("Product not found", 404));
     };
     Object.assign(product, req.body);
     await product.save();
@@ -126,113 +119,80 @@ const patchproducts = asyncHandler(async (req, res) => {
         status.Success,
         200,
         {
-            id: product._id,
-            title: product.title,
-            describe: product.describe,
-            discount: product.discount,
-            price: product.price,
-            rate: product.rate,
-            img: product.img || "",
-            quantity: product.quantity,
+            product
         },
         "Product updated successfully"
     );
-})
-/////////////////////////////////////////
-///put
-const putproducts = asyncHandler(async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return sendResponse(
-            res,
-            status.Fail,
-            400,
-            { product: null },
-            errors.array().map((err) => err.msg).join(", ")
-        );
-    }
-    if (!mongoose.Types.ObjectId.isValid(req.params.productid)) {
-        return sendResponse(
-            res,
-            status.Fail,
-            400,
-            { product: null },
-            "Invalid product ID format"
-        );
-    }
+};
+//Put
+const putproducts = async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return next(new appError(errors.array().map((err) => err.msg).join(", "), 400));
+        }
+        if (!mongoose.Types.ObjectId.isValid(req.params.productid)) {
+            return next(new appError("Invalid product ID format", 400));
+        }
 
-    let updtedproduct = await Product.findByIdAndUpdate(req.params.productid, req.body, { new: true, overwrite: true, runValidators: true });
-    if (!updtedproduct) {
+        let updatedProduct = await Product.findByIdAndUpdate(req.params.productid, req.body, { new: true, overwrite: true, runValidators: true });
+        if (!updatedProduct) {
+            return next(new appError("Product not found", 404));
+        }
+
         return sendResponse(
             res,
-            status.Fail,
-            404,
-            { product: null },
-            "Product not found"
+            status.Success,
+            200,
+            {
+                updatedProduct
+            },
+            "Product updated successfully"
         );
     }
-
-    return sendResponse(
-        res,
-        status.Success,
-        200,
-        {
-            id: updtedproduct._id,
-            title: updtedproduct.title,
-            describe: updtedproduct.describe,
-            discount: updtedproduct.discount,
-            price: updtedproduct.price,
-            rate: updtedproduct.rate,
-            img: updtedproduct.img || "",
-            quantity: updtedproduct.quantity,
-        },
-        "Product updated successfully"
-    );
-})
+    catch (err) {
+        next(err);
+    }
+};
 //////////////////////////////////////////
 ///delete by id
-const deleteproductsbyid = asyncHandler(async (req, res) => {
-    if (!mongoose.Types.ObjectId.isValid(req.params.productid)) {
-        return sendResponse(res, status.Fail, 400, { product: null }, "Invalid product ID format");
+const deleteproductsbyid = async (req, res, next) => {
+    try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.productid)) {
+            return next(new appError("Invalid product ID format", 400));
+        }
 
+        let deletedProduct = await Product.findByIdAndDelete(req.params.productid);
+        if (!deletedProduct) {
+            return next(new appError("Product not found", 404));
+        }
+        return sendResponse(
+            res,
+            status.Success,
+            200,
+            {
+                deletedProduct
+            },
+            "Product deleted successfully"
+        );
     }
-
-    let deletedProduct = await Product.findByIdAndDelete(req.params.productid);
-    if (!deletedProduct) {
-        return sendResponse(res, status.Fail, 404, { product: null }, "Product not found");
-
+    catch (err) {
+        next(err);
     }
-    return sendResponse(
-        res,
-        status.Success,
-        200,
-        {
-            id: deletedProduct._id,
-            title: deletedProduct.title,
-            describe: deletedProduct.describe,
-            discount: deletedProduct.discount,
-            price: deletedProduct.price,
-            rate: deletedProduct.rate,
-            img: deletedProduct.img || "",
-            quantity: deletedProduct.quantity,
-        },
-        "Product deleted successfully"
-    );
-
-})
+};
 /////delete all
-const deleteproducts = asyncHandler(async (req, res) => {
-
-    const deletedProductall = await Product.deleteMany({});
-    if (deletedProductall.deletedCount === 0) {
-        return sendResponse(res, status.Fail, 404, { products: null }, "No products found to delete");
-
+const deleteproducts = async (req, res, next) => {
+    try {
+        const deletedProductall = await Product.deleteMany({});
+        if (deletedProductall.deletedCount === 0) {
+            return next(new appError("No products found", 404));
+        }
+        return sendResponse(res, status.Success, 200, { deletedCount: result.deletedCount }, "All products deleted successfully");
     }
-    return sendResponse(res, status.Success, 200, { deletedCount: result.deletedCount }, "All products deleted successfully");
-
-
-}
-);
+    catch (err) {
+        next(err);
+    }
+};
 
 module.exports = {
     getallproducts,

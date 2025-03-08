@@ -1,6 +1,5 @@
-
-
 const { check, validationResult } = require("express-validator");
+const appError = require("../utils/appError.js");
 
 const validateschema = [
   check("title", "Title is required").notEmpty(),
@@ -12,7 +11,7 @@ const validateschema = [
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return next(new appError(errors.array().map((err) => err.msg).join(", "), 400));
     }
     next();
   },
