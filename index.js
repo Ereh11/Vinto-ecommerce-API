@@ -47,6 +47,11 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/shipmentInfo", shipmentInfoRoutes);
 app.use(errorHandler);
 
+
+app.all('*', (req, res) => {
+  sendResponse(res, status.fail, 404, null, `Route '${req.originalUrl}' not found`);
+});
+
 app.listen(4000, () => {
   console.log("Server is listening on port 4000");
 });
