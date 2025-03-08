@@ -2,6 +2,7 @@ const express = require("express");
 const { check, validationResult } = require("express-validator");
 const productcontroller = require('../controllers/product.controllers')
 const validateschema = require('../middlewares/validateproduct')
+const validateItemID = require("../middlewares/validateItemID");
 const router = express.Router();
 router.route('/')
   .get(productcontroller.getallproducts)

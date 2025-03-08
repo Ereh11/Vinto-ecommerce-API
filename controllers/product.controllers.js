@@ -4,7 +4,6 @@ const { validationResult } = require("express-validator");
 const mongoose = require("mongoose");
 const asyncHandler = require("../middlewares/asyncHandler.js");
 const appError = require("../utils/appError.js");
-
 const sendResponse = require("../utils/sendResponse.js");
 const status = require("../utils/status.js");
 

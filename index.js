@@ -24,9 +24,6 @@ mongoose
     console.log("Connected to MongoDB Atlas successfully");
   })
   .catch((err) => {
-    console.log(err);
-  })
-  .catch((err) => {
     console.error("MongoDB connection error:", err);
   });
 
