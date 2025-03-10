@@ -25,25 +25,34 @@ const connectDB = async () => {
 const seedDatabase = async () => {
   try {
     // Find the existing category by title (change "Electronics" as needed)
-    const existingCategory = await Category.findOne({ title: "Electronics" });
+    const existingCategory = await Category.findOne({ title: "Furniture" });
     if (!existingCategory) {
-      console.error("Category 'Electronics' not found. Please seed the category first.");
+      console.error("Category not found. Please seed the category first.");
       process.exit(1);
     }
 
     // Generate the public URL for the product image
-    const productImageUrl = await generatePublicUrl("brownclock.jpg");
-
-    // Create a sample product object
+    const productImageUrl01 = await generatePublicUrl("./image.png");
+    const productImageUrl02 = await generatePublicUrl("./image copy.png");
+    const productImageUrl03 = await generatePublicUrl("./image copy 2.png");
+    //const productImageUrl04 = await generatePublicUrl("./image copy 3.png");
     const sampleProduct = {
-      title: "brown clock",
-      price:3800,
-      describe: "A classic and stylish brown wall clock that blends functionality with elegance. Designed with a rich brown frame, it adds warmth and sophistication to any room, making it perfect for homes, offices, or cafés.",
-      rate: 4.6,
-      discount: 15,
-      quantity: 40,
-      img:productImageUrl,
-      category: "67b8ff6248c555f16011ef15", // Reference to the existing category
+      title: "Mainsail Striped Sweater",
+      price: 3199.99,
+      describe: "Classic and timeless vintage inspired cream colored knit sweater with dark navy blue horizontal stripes. Features long puffed sleeves, drop shoulders, and cozy slightly oversize fit.",
+      rate: 4.9,
+      discount: 0,
+      quantity: 60,
+      characteristics: [
+        "Fabric: 100% Cotton",
+        "Measurements: 30 length / 20 across chest (relaxed) / 27 raglan sleeve",
+        "Puffed sleeves",
+        "Dropped shoulders",
+        "Imported"
+      ],
+      addedAt: "2025-03-08T00:00:02.012+00:00",
+      img: [productImageUrl01, productImageUrl02, productImageUrl03],// productImageUrl04],
+      category: "67ba3e8716548f20d6370e86", 
     };
 
     // Insert the sample product into the database

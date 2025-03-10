@@ -11,5 +11,4 @@
 .prettier.config.cjs
 .env
 node_modules.env
-node_modules
-.vscode
+node_modules/
