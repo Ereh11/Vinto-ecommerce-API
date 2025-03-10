@@ -12,3 +12,5 @@
 .env
 node_modules.env
 node_modules/
+post.js
+jSend.md
