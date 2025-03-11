@@ -1,7 +1,8 @@
 // Conrollers for product
+const mongoose = require("mongoose");
+const fuse = require("fuse.js");
 const { Product } = require("../models/product.modle.js")
 const { validationResult } = require("express-validator");
-const mongoose = require("mongoose");
 const asyncHandler = require("../middlewares/asyncHandler.js");
 const appError = require("../utils/appError.js");
 const sendResponse = require("../utils/sendResponse.js");
@@ -191,8 +192,7 @@ const deleteproducts = async (req, res, next) => {
         next(err);
     }
 };
-const getOffers = async(req, res, next) =>
-{
+const getOffers = async (req, res, next) => {
     try {
         const limit = req.query.limit ? parseInt(req.query.limit) : 12;
         const page = req.query.page ? parseInt(req.query.page) : 1;
@@ -222,8 +222,7 @@ const getOffers = async(req, res, next) =>
     }
 
 };
-const getTopRated = async(req, res, next) =>
-{
+const getTopRated = async (req, res, next) => {
     try {
         const limit = req.query.limit ? parseInt(req.query.limit) : 12;
         const page = req.query.page ? parseInt(req.query.page) : 1;
@@ -231,7 +230,7 @@ const getTopRated = async(req, res, next) =>
         if (limit <= 0 || page <= 0) {
             return next(new appError("Page and limit must be positive numbers", 400));
         }
-        const products = await Product.find({ rate: { $gte: 4 } }).sort({rate: -1}).limit(limit).skip(startIndex);
+        const products = await Product.find({ rate: { $gte: 4 } }).sort({ rate: -1 }).limit(limit).skip(startIndex);
         if (products.length === 0) {
             return sendResponse(
                 res,
@@ -253,8 +252,7 @@ const getTopRated = async(req, res, next) =>
     }
 
 };
-const getNewArrivals = async(req, res, next) =>
-{
+const getNewArrivals = async (req, res, next) => {
     try {
         const limit = req.query.limit ? parseInt(req.query.limit) : 12;
         const page = req.query.page ? parseInt(req.query.page) : 1;
@@ -284,6 +282,76 @@ const getNewArrivals = async(req, res, next) =>
     }
 
 };
+
+const searchProducts = async (req, res, next) => {
+    try {
+        const searched = req.query.searched;
+        if (!searched) {
+            return next(new appError("Please provide a search query", 400));
+        }
+
+        const products = await Product.find();
+
+        const options = {
+            keys: ["title", "describe"],
+            threshold: 0.3,
+            minMatchCharLength: Math.max(2, Math.floor(searched.length / 2)),
+        };
+
+        const fuseInstance = new fuse(products, options);
+
+        const result = fuseInstance.search(searched).map((r) => r.item);
+
+        if (result.length === 0) {
+            return sendResponse(res, status.Fail, 404, { products: null }, "No products found");
+        }
+
+        return sendResponse(res, status.Success, 200, { products: result }, "Products retrieved successfully");
+    } catch (err) {
+        next(err);
+    }
+};
+const getFilteredProducts = async (req, res, next) => {
+    try {
+        const { minPrice, maxPrice, sort, category, page = 1, limit = 12 } = req.query;
+
+        let query = {};
+
+        if (minPrice || maxPrice) {
+            query.price = {};
+            if (minPrice) query.price.$gte = parseFloat(minPrice);
+            if (maxPrice) query.price.$lte = parseFloat(maxPrice);
+        }
+        if (category) {
+            if (!mongoose.Types.ObjectId.isValid(category)) {
+                return next(new appError("Invalid category ID format", 400));
+            }
+            else {
+                query.category = category
+            }
+        }
+
+        let sortOption = {};
+        if (sort === "newest") sortOption.addedAt = -1;
+        else if (sort === "oldest") sortOption.addedAt = 1;
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const products = await Product.find(query)
+            .sort(sortOption)
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        if (products.length === 0) {
+            return sendResponse(res, status.Fail, 404, { products: null }, "No products found");
+        }
+
+        return sendResponse(res, status.Success, 200, { products }, "Products retrieved successfully");
+
+    } catch (err) {
+        next(err);
+    }
+};
+
+
 module.exports = {
     getallproducts,
     getsingleproducts,
@@ -294,5 +362,7 @@ module.exports = {
     deleteproducts,
     getOffers,
     getTopRated,
-    getNewArrivals
+    getNewArrivals,
+    searchProducts,
+    getFilteredProducts
 }

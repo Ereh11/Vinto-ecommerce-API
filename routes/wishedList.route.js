@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const wishlistController = require("../controllers/wishedList.controller.js");
+const wishlistController = require("../controllers/wishedList.controllers.js");
 const validateIds = require("../middlewares/validateIds");
 
 router.get("/", wishlistController.getAllWishlists);

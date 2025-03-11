@@ -8,13 +8,17 @@ router.route('/')
   .get(productcontroller.getallproducts)
   .post(validateschema, productcontroller.postproducts)
   .delete(productcontroller.deleteproducts);
-  
+
 router.route('/newarrivals')
   .get(productcontroller.getNewArrivals);
 router.route('/offers')
   .get(productcontroller.getOffers);
 router.route('/toprated')
   .get(productcontroller.getTopRated);
+router.route('/search')
+  .get(productcontroller.searchProducts);
+router.route('/filter')
+  .get(productcontroller.getFilteredProducts);
 
 router.route('/:productid')
   .get(productcontroller.getsingleproducts)
