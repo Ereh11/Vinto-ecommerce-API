@@ -153,8 +153,7 @@ const putproducts = async (req, res) => {
         next(err);
     }
 };
-//////////////////////////////////////////
-///delete by id
+//Delete by id
 const deleteproductsbyid = async (req, res, next) => {
     try {
         if (!mongoose.Types.ObjectId.isValid(req.params.productid)) {
@@ -179,7 +178,7 @@ const deleteproductsbyid = async (req, res, next) => {
         next(err);
     }
 };
-/////delete all
+//Delete all
 const deleteproducts = async (req, res, next) => {
     try {
         const deletedProductall = await Product.deleteMany({});
@@ -192,7 +191,99 @@ const deleteproducts = async (req, res, next) => {
         next(err);
     }
 };
+const getOffers = async(req, res, next) =>
+{
+    try {
+        const limit = req.query.limit ? parseInt(req.query.limit) : 12;
+        const page = req.query.page ? parseInt(req.query.page) : 1;
+        const startIndex = (page - 1) * limit;
+        if (limit <= 0 || page <= 0) {
+            return next(new appError("Page and limit must be positive numbers", 400));
+        }
+        const products = await Product.find({ discount: { $gt: 0 } }).limit(limit).skip(startIndex);
+        if (products.length === 0) {
+            return sendResponse(
+                res,
+                status.Fail,
+                404,
+                { products: null },
+                "No products found"
+            );
+        }
+        return sendResponse(
+            res,
+            status.Success,
+            200,
+            { products },
+            "Products retrieved successfully"
+        );
+    } catch (err) {
+        next(err);
+    }
 
+};
+const getTopRated = async(req, res, next) =>
+{
+    try {
+        const limit = req.query.limit ? parseInt(req.query.limit) : 12;
+        const page = req.query.page ? parseInt(req.query.page) : 1;
+        const startIndex = (page - 1) * limit;
+        if (limit <= 0 || page <= 0) {
+            return next(new appError("Page and limit must be positive numbers", 400));
+        }
+        const products = await Product.find({ rate: { $gte: 4 } }).sort({rate: -1}).limit(limit).skip(startIndex);
+        if (products.length === 0) {
+            return sendResponse(
+                res,
+                status.Fail,
+                404,
+                { products: null },
+                "No products found"
+            );
+        }
+        return sendResponse(
+            res,
+            status.Success,
+            200,
+            { products },
+            "Products retrieved successfully"
+        );
+    } catch (err) {
+        next(err);
+    }
+
+};
+const getNewArrivals = async(req, res, next) =>
+{
+    try {
+        const limit = req.query.limit ? parseInt(req.query.limit) : 12;
+        const page = req.query.page ? parseInt(req.query.page) : 1;
+        const startIndex = (page - 1) * limit;
+        if (limit <= 0 || page <= 0) {
+            return next(new appError("Page and limit must be positive numbers", 400));
+        }
+        const products = await Product.find().sort({ addedAt: -1 }).limit(limit).skip(startIndex);
+        if (products.length === 0) {
+            return sendResponse(
+                res,
+                status.Fail,
+                404,
+                { products: null },
+                "No products found"
+            );
+        }
+        return sendResponse(
+            res,
+            status.Success,
+            200,
+            { products },
+            "Products retrieved successfully"
+        );
+    } catch (err) {
+        next(err);
+    }
+
+};
 module.exports = {
     getallproducts,
     getsingleproducts,
@@ -200,5 +291,8 @@ module.exports = {
     patchproducts,
     putproducts,
     deleteproductsbyid,
-    deleteproducts
+    deleteproducts,
+    getOffers,
+    getTopRated,
+    getNewArrivals
 }

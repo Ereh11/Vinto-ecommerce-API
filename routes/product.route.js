@@ -8,12 +8,20 @@ router.route('/')
   .get(productcontroller.getallproducts)
   .post(validateschema, productcontroller.postproducts)
   .delete(productcontroller.deleteproducts);
-
+  
+router.route('/newarrivals')
+  .get(productcontroller.getNewArrivals);
+router.route('/offers')
+  .get(productcontroller.getOffers);
+router.route('/toprated')
+  .get(productcontroller.getTopRated);
 
 router.route('/:productid')
   .get(productcontroller.getsingleproducts)
   .patch(productcontroller.patchproducts)
   .put(validateschema, productcontroller.putproducts)
   .delete(productcontroller.deleteproductsbyid)
+
+
 
 module.exports = router
