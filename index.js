@@ -1,23 +1,52 @@
-// Main file to start our API
 
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-
-const URLDB =
-  "mongodb+srv://Vintodevs:amj76CzcY4Ymqeqc@vintocluster.frlbn.mongodb.net/?retryWrites=true&w=majority&appName=VintoCluster"
+const categoryRoutes = require("./routes/category.route.js");
+const itemOrderedRoutes = require("./routes/itemOrdered.route.js");
+const cartRoutes = require("./routes/cart.route.js");
+const shipmentInfoRoutes = require("./routes/shipmentInfo.route.js");
+const errorHandler = require("./middlewares/errorHandler.js");
 const app = express();
 
-mongoose.connect(URLDB).then(() => {
-  console.log("Mongoose Connect Successfully");
-});
+const MONGODB_URI = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.CLUSTER_NAEM}:27017,${process.env.CLUSTER_NAME}:27017,${process.env.CLUSTER_NAME}:27017/${process.env.DB_NAME}?ssl=true&replicaSet=atlas-7o5bfh-shard-0&authSource=admin&retryWrites=true&w=majority&appName=${process.env.APP_NAME}`;
 
+// Connect to MongoDB
+mongoose
+
+  .connect(MONGODB_URI)
+
+  .then(() => {
+    console.log("Connected to MongoDB Atlas successfully");
+  })
+  .catch((err) => {
+    console.log(err);
+  })
+  .catch((err) => {
+    console.error("MongoDB connection error:", err);
+  });
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Here put your routes
-// app.use("", );
 
-app.listen(4000, () => {
-  console.log("Server is listining on port 4000");
+// Routes
+const userRouter = require("./routes/user.route");
+const authRouter = require("./routes/authentication/user.route");
+const profileRouter = require("./routes/profile.route");
+
+app.use("/api/users", userRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/profile", profileRouter);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/itemOrdered", itemOrderedRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/shipmentInfo", shipmentInfoRoutes);
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`Server is listening on port ${PORT}`);
 });
