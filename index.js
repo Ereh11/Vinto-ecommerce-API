@@ -10,12 +10,14 @@ const categoryRoutes = require("./routes/category.route.js");
 const productRoutes = require("./routes/product.route.js")
 const { Product } = require("./models/product.modle.js")
 const errorHandler = require("./middlewares/errorHandler.js")
-const URLDB =
-"mongodb+srv://Vintodevs:amj76CzcY4Ymqeqc@vintocluster.frlbn.mongodb.net/?retryWrites=true&w=majority&appName=VintoCluster";
+
+const URLDB = `mongodb+srv://Vintodevs:ngTl9Pm4iLopenTcEm7@vintocluster.frlbn.mongodb.net/Vinto?retryWrites=true&w=majority&appName=VintoCluster;`;
+console.log(URLDB);
 
 const app = express();
 const { check, validationResult } = require("express-validator");
 mongoose
+
   .connect(URLDB)
   .then(() => {
     console.log("Mongoose Connect Successfully");
@@ -23,6 +25,8 @@ mongoose
   .catch((err) => {
     console.log("ERORRRRRRRRR");
   });
+
+  
 
 app.use(cors());
 app.use(express.json());
