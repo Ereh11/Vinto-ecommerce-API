@@ -9,8 +9,8 @@
 .prettierrc.toml
 .prettier.config.js
 .prettier.config.cjs
-
 .env
 node_modules.env
-node_modules
-node_modules
+node_modules/
+post.js
+jSend.md

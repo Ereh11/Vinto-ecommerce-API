@@ -1,7 +1,7 @@
 // Controllers for user routes
 const mongoose = require("mongoose");
 const User = require("../models/user.modle");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 
 const getAllUsers = async (req, res) => {
   try {
