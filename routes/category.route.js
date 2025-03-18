@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const categoryController = require("../controllers/category.controllers.js");
 const validateCategory = require("../middlewares/validateCategory");
+const validateCategoryID = require("../middlewares/validateCategoryID");
 
 router
   .route("/")
@@ -11,9 +12,9 @@ router
 
 router
   .route("/:id")
-  .get(categoryController.getCategoryById)
-  .put(validateCategory, categoryController.updateCategory)
-  .patch(categoryController.partialUpdateCategory)
-  .delete(categoryController.deleteCategory);
+  .get(validateCategoryID, categoryController.getCategoryById)
+  .put(validateCategoryID, validateCategory, categoryController.updateCategory)
+  .patch(validateCategoryID, categoryController.partialUpdateCategory)
+  .delete(validateCategoryID, categoryController.deleteCategory);
 
 module.exports = router;
