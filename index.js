@@ -2,6 +2,9 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+
+const stripeRoutes = require('./routes/stripe.route.js');
+const productRoutes = require("./routes/product.route.js")
 const categoryRoutes = require("./routes/category.route.js");
 const likeRoutes = require("./routes/itemLiked.route.js");
 const wishlistRoutes = require("./routes/wishedList.route.js");
@@ -43,6 +46,8 @@ app.use("/api/itemOrdered", itemOrderedRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/shipmentInfo", shipmentInfoRoutes);
 app.use("/api/products", productRoutes);
+app.use('/api/stripe', stripeRoutes);
+
 app.use(errorHandler);
 
 
@@ -59,3 +64,4 @@ process.on("unhandledRejection", (err) => {
   console.error("Unhandled Rejection! Shutting down...", err);
   server.close(() => process.exit(1));
 });
+
