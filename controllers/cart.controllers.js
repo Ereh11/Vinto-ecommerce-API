@@ -4,7 +4,7 @@ const { Product } = require('../models/product.modle.js');
 const mongoose = require('mongoose');
 const sendResponse = require('../utils/sendResponse');
 const asyncHandler = require('../middlewares/asyncHandler');
-const { status } = require('../utils/status');
+const  status  = require('../utils/status');
 
 exports.addToCart = asyncHandler(async (req, res) => {
     const { productId, quantity } = req.body;
@@ -31,8 +31,6 @@ exports.addToCart = asyncHandler(async (req, res) => {
         'Quantity updated successfully'
     );
 });
-
-
 
 exports.getMyCart = asyncHandler(async (req, res) => {
     const cart = await Cart.findOne({ user: req.params.id, status: 'pending' });
