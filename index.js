@@ -3,6 +3,9 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+
+const stripeRoutes = require('./routes/stripe.route.js');
+const productRoutes = require("./routes/product.route.js")
 const categoryRoutes = require("./routes/category.route.js");
 const itemOrderedRoutes = require("./routes/itemOrdered.route.js");
 const cartRoutes = require("./routes/cart.route.js");
@@ -44,9 +47,13 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/itemOrdered", itemOrderedRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/shipmentInfo", shipmentInfoRoutes);
+app.use("/api/products", productRoutes);
+app.use('/api/stripe', stripeRoutes);
+
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);
 });
+
