@@ -133,6 +133,7 @@ exports.getMyCart = asyncHandler(async (req, res) => {
   );
 });
 
+
 exports.getAllUserCarts = asyncHandler(async (req, res) => {
   const carts = await Cart.find({ user: req.params.id, status: { $ne: "pending" } })
     .sort({ date: -1 })
@@ -310,6 +311,7 @@ exports.updateCart = asyncHandler(async (req, res) => {
 });
 
 
+
 exports.partialUpdateCart = asyncHandler(async (req, res) => {
   const { itemOrderedId, newQuantity } = req.body;
   const userId = req.params.id;
@@ -368,6 +370,65 @@ exports.partialUpdateCart = asyncHandler(async (req, res) => {
   sendResponse(res, status.Success, 204, null);
 });
 
+
+
+exports.removeItemFromCart = asyncHandler(async (req, res) => {
+
+  const { itemOrderedId } = req.body;
+  const userId = req.params.id;
+
+  const cart = await Cart.findOne({ user: userId, status: 'pending' })
+    .populate({
+      path: 'ItemsOrdered',
+      match: { _id: itemOrderedId },
+      populate: {
+        path: 'product',
+        select: 'price discount quantity'
+      }
+    });
+
+  if (!cart) {
+    return sendResponse(res, status.Fail, 404, { message: "Cart not found" });
+  }
+
+  if (!cart.ItemsOrdered.length) {
+    return sendResponse(res, status.Fail, 404, { message: "Item not found in cart" });
+  }
+
+  const itemToRemove = cart.ItemsOrdered.find(item =>
+    item._id.equals(itemOrderedId)
+  );
+
+
+  if (!itemToRemove) {
+    return sendResponse(res, status.Fail, 404, { message: "Item not found in cart" });
+  }
+
+  const product = await Product.findById(itemToRemove.product._id);
+
+  if (!product) {
+    return sendResponse(res, status.Fail, 404, { message: "Product not found" });
+  }
+
+  await Product.findByIdAndUpdate(
+    itemToRemove.product._id,
+    { $inc: { quantity: itemToRemove.quantity } }
+  );
+
+  const pricePerItem = product.discount
+    ? product.price * (1 - product.discount / 100)
+    : product.price;
+
+  const itemTotal = pricePerItem * itemToRemove.quantity;
+  cart.total -= itemTotal;
+  cart.ItemsOrdered.pull(itemOrderedId);
+
+  await ItemOrdered.findByIdAndDelete(itemOrderedId);
+  await cart.save();
+
+
+  sendResponse(res, status.Success, 200, null);
+});
 
 
 exports.deleteCart = asyncHandler(async (req, res) => {

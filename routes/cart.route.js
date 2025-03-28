@@ -17,6 +17,8 @@ router.route("/:id")
   .patch(validateItemID, cartController.partialUpdateCart)
   .delete(validateItemID, cartController.deleteCart)
 
+router.route("/remove/:id")
+  .post(validateItemID, cartController.removeItemFromCart)
 
 router.route("/admin/:id")
   .get(validateItemID, cartController.getCart)
