@@ -30,6 +30,10 @@ const profileSchema = new mongoose.Schema({
     type: String,
     required: [true, "Country is required"],
   },
+  picture: {
+    type: String,
+    required: [true, "Profile picture is required"],
+  },
   createdAt: {
     type: Date,
     default: Date.now,
