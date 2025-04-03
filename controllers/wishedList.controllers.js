@@ -1,6 +1,6 @@
 const asyncHandler = require("../middlewares/asyncHandler.js");
 const sendResponse = require("../utils/sendResponse.js");
-const { status } = require("../utils/status.js");
+const  status  = require("../utils/status.js");
 const { WishedList } = require("../models/wishedList.modle.js");
 
 // ----------------- Get All Wishlists (Admin) -----------------
