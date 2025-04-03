@@ -82,3 +82,5 @@ const createCheckoutSession = async (req, res) => {
   }
 };
 
+module.exports = { createCheckoutSession, checkoutSuccess };
+

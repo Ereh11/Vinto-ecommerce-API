@@ -1,6 +1,6 @@
 const User = require("../models/user.modle");
 const UserOTPVerification = require("../models/UserOTPverification");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../utils/email");
 const crypto = require("crypto");
@@ -150,24 +150,22 @@ const forgotPassword = async (req, res) => {
     const resetToken = user.createPasswordResetToken();
     await user.save({ validateBeforeSave: false });
 
-    const resetURL = `${req.protocol}://${req.get(
-      "host"
-    )}/api/auth/reset-password/${resetToken}`;
+    // Update frontend URL to port 4200
+    const resetURL = `http://localhost:4200/reset-password/${resetToken}`;
 
     await sendEmail({
       to: user.email,
-      subject: "Password Reset Token (valid for 10 minutes)",
-      text: `Forgot your password? Submit a PATCH request with your new password to: ${resetURL}\nIf you didn't forget your password, please ignore this email.`,
+      subject: "Password Reset",
+      text: `Click the following link to reset your password: ${resetURL}\n\nThis link is valid for 10 minutes.\n\nIf you didn't request a password reset, please ignore this email.`,
     });
 
+    // Debug info (remove in production)
     console.log("Reset Token:", resetToken);
     console.log("Hashed Token in DB:", user.passwordResetToken);
 
     res.status(200).json({
       status: "success",
-      message: "Token sent to email",
-      resetToken,
-      hashedToken: user.passwordResetToken,
+      message: "Reset link sent to email",
     });
   } catch (error) {
     if (user) {
@@ -177,7 +175,6 @@ const forgotPassword = async (req, res) => {
     }
 
     console.error("Email error:", error);
-
     return res.status(500).json({
       status: "error",
       message: "Error sending email. Try again later.",
@@ -187,18 +184,25 @@ const forgotPassword = async (req, res) => {
 
 const resetPassword = async (req, res) => {
   try {
-    // 1) Get user based on the token
+    // 1) Hash the token from params
     const hashedToken = crypto
       .createHash("sha256")
       .update(req.params.token)
       .digest("hex");
 
+    console.log("Received token:", req.params.token);
+    console.log("Hashed received token:", hashedToken);
+
+    // 2) Find user with this token and check if expired
     const user = await User.findOne({
       passwordResetToken: hashedToken,
       passwordResetExpires: { $gt: Date.now() },
     });
 
-    // 2) If token has not expired, and there is user, set the new password
+    console.log("Found user:", user ? "Yes" : "No");
+    console.log("Current time:", Date.now());
+    console.log("Token expiry:", user?.passwordResetExpires);
+
     if (!user) {
       return res.status(400).json({
         status: "error",
@@ -213,6 +217,7 @@ const resetPassword = async (req, res) => {
     user.passwordResetExpires = undefined;
     await user.save();
 
+    // 4) Generate JWT token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRES_IN,
     });
@@ -223,6 +228,7 @@ const resetPassword = async (req, res) => {
       token,
     });
   } catch (error) {
+    console.error("Reset error:", error);
     res.status(400).json({
       status: "error",
       message: error.message,

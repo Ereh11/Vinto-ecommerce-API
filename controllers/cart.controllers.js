@@ -1,27 +1,26 @@
-const { Cart } = require('../models/cart.modle.js');
-const { ItemOrdered } = require('../models/itemOrdered.modle.js');
-const { Product } = require('../models/product.modle.js');
-const mongoose = require('mongoose');
-const sendResponse = require('../utils/sendResponse');
-const asyncHandler = require('../middlewares/asyncHandler');
+const { Cart } = require("../models/cart.modle.js");
+const { ItemOrdered } = require("../models/itemOrdered.modle.js");
+const { Product } = require("../models/product.modle.js");
+const mongoose = require("mongoose");
+const sendResponse = require("../utils/sendResponse");
+const asyncHandler = require("../middlewares/asyncHandler");
 const status = require("../utils/status.js");
 
-
 getTotal = (quantity, price, discount = 0) => {
-  return ((price - (discount / 100 * price)) * quantity);
-}
+  return (price - (discount / 100) * price) * quantity;
+};
 
 exports.addToCart = asyncHandler(async (req, res) => {
   const { productId, quantity = 1 } = req.body;
   const userId = req.params.id;
-  let cart = await Cart.findOne({ user: userId, status: 'pending' });
+  let cart = await Cart.findOne({ user: userId, status: "pending" });
 
   if (cart) {
     // I have the cart
     const existingItemOrdered = await ItemOrdered.findOne({
       _id: { $in: cart.ItemsOrdered },
       product: productId,
-      user: userId
+      user: userId,
     });
     // I have the product
     if (existingItemOrdered) {
@@ -39,12 +38,7 @@ exports.addToCart = asyncHandler(async (req, res) => {
       }
 
       await cart.save();
-      return sendResponse(
-        res,
-        status.Success,
-        200,
-        { cart },
-      );
+      return sendResponse(res, status.Success, 200, { cart });
     }
   } else {
     cart = new Cart({ user: userId, ItemsOrdered: [], total: 0 });
@@ -52,7 +46,7 @@ exports.addToCart = asyncHandler(async (req, res) => {
   const itemOrdered = new ItemOrdered({
     product: productId,
     user: userId,
-    quantity
+    quantity,
   });
   await itemOrdered.save();
 
@@ -69,24 +63,18 @@ exports.addToCart = asyncHandler(async (req, res) => {
   }
 
   await cart.save();
-  sendResponse(
-    res,
-    status.Success,
-    200,
-    { cart },
-  );
+  sendResponse(res, status.Success, 200, { cart });
 });
 
-
 exports.getMyCart = asyncHandler(async (req, res) => {
-  const cart = await Cart.findOne({ user: req.params.id, status: 'pending' })
+  const cart = await Cart.findOne({ user: req.params.id, status: "pending" })
     .sort({ date: -1 })
     .populate({
-      path: 'ItemsOrdered',
+      path: "ItemsOrdered",
       populate: {
-        path: 'product',
-        model: 'Product',
-      }
+        path: "product",
+        model: "Product",
+      },
     });
 
   const productsWithStatus = cart.ItemsOrdered.map(item => ({
@@ -97,13 +85,7 @@ exports.getMyCart = asyncHandler(async (req, res) => {
   }));
 
   if (!cart) {
-    return sendResponse(
-      res,
-      status.Fail,
-      404,
-      { cart: null },
-      "No Cart found"
-    );
+    return sendResponse(res, status.Fail, 404, { cart: null }, "No Cart found");
   }
 
   const formattedResponse = {
@@ -111,18 +93,23 @@ exports.getMyCart = asyncHandler(async (req, res) => {
     date: cart.date,
     total: cart.total,
     status: cart.status,
-    items: productsWithStatus
+    items: productsWithStatus,
   };
 
+  if (cart.length === 0) {
+    return sendResponse(res, status.Fail, 404, { cart: null }, "No Cart found");
+  }
+
+  const formattedResponse = {
+    // cartId: cart._id,
+    date: cart.date,
+    total: cart.total,
+    status: cart.status,
+    items: productsWithStatus,
+  };
 
   if (cart.length === 0) {
-    return sendResponse(
-      res,
-      status.Fail,
-      404,
-      { cart: null },
-      "No Cart found"
-    );
+    return sendResponse(res, status.Fail, 404, { cart: null }, "No Cart found");
   }
 
   sendResponse(
@@ -134,20 +121,23 @@ exports.getMyCart = asyncHandler(async (req, res) => {
   );
 });
 
-
 exports.getAllUserCarts = asyncHandler(async (req, res) => {
-  const carts = await Cart.find({ user: req.params.id, status: { $ne: "pending" } })
+  const carts = await Cart.find({
+    user: req.params.id,
+    status: { $ne: "pending" },
+  })
     .sort({ date: -1 })
     .populate({
-      path: 'ItemsOrdered',
+      path: "ItemsOrdered",
       populate: {
-        path: 'product',
-        model: 'Product',
-        select: 'title price describe rate discount quantity img characteristics category'
-      }
+        path: "product",
+        model: "Product",
+        select:
+          "title price describe rate discount quantity img characteristics category",
+      },
     });
-  const formattedResponse = carts.map(cart => {
-    const productsWithStatus = cart.ItemsOrdered.map(item => ({
+  const formattedResponse = carts.map((cart) => {
+    const productsWithStatus = cart.ItemsOrdered.map((item) => ({
       product: item.product,
       quantity: item.quantity,
       status: cart.status,
@@ -158,7 +148,7 @@ exports.getAllUserCarts = asyncHandler(async (req, res) => {
       date: cart.date,
       total: cart.total,
       status: cart.status,
-      items: productsWithStatus
+      items: productsWithStatus,
     };
   });
   sendResponse(
@@ -166,24 +156,17 @@ exports.getAllUserCarts = asyncHandler(async (req, res) => {
     status.Success,
     200,
     {
-      carts: formattedResponse
+      carts: formattedResponse,
     },
     "Carts retrieved successfully"
   );
 });
 
-
 exports.getCart = asyncHandler(async (req, res) => {
   const cart = await Cart.findOne({ _id: req.params.id });
 
   if (cart.length === 0) {
-    return sendResponse(
-      res,
-      status.Fail,
-      404,
-      { cart: null },
-      "No Cart found"
-    );
+    return sendResponse(res, status.Fail, 404, { cart: null }, "No Cart found");
   }
 
   sendResponse(
@@ -193,21 +176,13 @@ exports.getCart = asyncHandler(async (req, res) => {
     { cart },
     "Cart retrieved successfully"
   );
-
 });
-
 
 exports.getAllCart = asyncHandler(async (req, res) => {
   const cart = await Cart.find();
 
   if (cart.length === 0) {
-    return sendResponse(
-      res,
-      status.Fail,
-      404,
-      { cart: null },
-      "No Cart found"
-    );
+    return sendResponse(res, status.Fail, 404, { cart: null }, "No Cart found");
   }
 
   sendResponse(
@@ -217,14 +192,28 @@ exports.getAllCart = asyncHandler(async (req, res) => {
     { cart },
     "Cart retrieved successfully"
   );
+});
 
+exports.getAllCart = asyncHandler(async (req, res) => {
+  const cart = await Cart.find();
+
+  if (cart.length === 0) {
+    return sendResponse(res, status.Fail, 404, { cart: null }, "No Cart found");
+  }
+
+  sendResponse(
+    res,
+    status.Success,
+    200,
+    { cart },
+    "Cart retrieved successfully"
+  );
 });
 
 exports.createCart = asyncHandler(async (req, res) => {
-
   const { ItemsOrdered, user } = req.body;
   const existingCart = await Cart.findOne({
-    status: 'pending'
+    status: "pending",
   });
 
   let cartInstance;
@@ -237,21 +226,21 @@ exports.createCart = asyncHandler(async (req, res) => {
   }
   await cartInstance.save();
 
-  const populatedCart = await Cart.findById(cartInstance._id)
-    .populate({
-      path: 'ItemsOrdered',
-      populate: {
-        path: 'product'
-      }
-    });
+  const populatedCart = await Cart.findById(cartInstance._id).populate({
+    path: "ItemsOrdered",
+    populate: {
+      path: "product",
+    },
+  });
 
   let total = populatedCart.ItemsOrdered.reduce((sum, item) => {
     if (item.product && item.product.price) {
       if (item.product.discount) {
-        const priceAfterDiscount = item.product.price * (1 - (item.product.discount / 100));
-        return sum + (priceAfterDiscount * item.quantity);
+        const priceAfterDiscount =
+          item.product.price * (1 - item.product.discount / 100);
+        return sum + priceAfterDiscount * item.quantity;
       }
-      return sum + (item.product.price * item.quantity);
+      return sum + item.product.price * item.quantity;
     }
     return sum;
   }, 0);
@@ -264,10 +253,9 @@ exports.createCart = asyncHandler(async (req, res) => {
     status.Success,
     201,
     { cartInstance: populatedCart },
-    'Cart created successfully'
+    "Cart created successfully"
   );
 });
-
 
 exports.updateCart = asyncHandler(async (req, res) => {
   const cart = await Cart.findByIdAndUpdate(req.params.id, req.body, {
@@ -276,26 +264,21 @@ exports.updateCart = asyncHandler(async (req, res) => {
   });
 
   if (!cart) {
-    return sendResponse(
-      res,
-      status.Fail,
-      404,
-      { cart: null },
-    );
+    return sendResponse(res, status.Fail, 404, { cart: null });
   }
 
-  const populatedCart = await Cart.findById(cart._id)
-    .populate({
-      path: 'ItemsOrdered',
-      populate: {
-        path: 'product'
-      }
-    });
+  const populatedCart = await Cart.findById(cart._id).populate({
+    path: "ItemsOrdered",
+    populate: {
+      path: "product",
+    },
+  });
 
   let total = populatedCart.ItemsOrdered.reduce((sum, item) => {
     if (item.product && item.product.price) {
-      const priceAfterDiscount = item.product.price * (1 - (item.product.discount / 100));
-      return sum + (priceAfterDiscount * item.quantity);
+      const priceAfterDiscount =
+        item.product.price * (1 - item.product.discount / 100);
+      return sum + priceAfterDiscount * item.quantity;
     }
     return sum;
   }, 0);
@@ -303,39 +286,35 @@ exports.updateCart = asyncHandler(async (req, res) => {
   populatedCart.total = total;
   await populatedCart.save();
 
-  sendResponse(
-    res,
-    status.Success,
-    200,
-    { cart },
-  );
+  sendResponse(res, status.Success, 200, { cart });
 });
-
-
 
 exports.partialUpdateCart = asyncHandler(async (req, res) => {
   const { itemOrderedId, newQuantity } = req.body;
   const userId = req.params.id;
 
-  const cart = await Cart.findOne({ user: userId, status: 'pending' })
-    .populate({
-      path: 'ItemsOrdered',
+  const cart = await Cart.findOne({ user: userId, status: "pending" }).populate(
+    {
+      path: "ItemsOrdered",
       populate: {
-        path: 'product',
-        select: 'price discount quantity'
-      }
-    });
+        path: "product",
+        select: "price discount quantity",
+      },
+    }
+  );
 
   if (!cart) {
     return sendResponse(res, status.Fail, 404, { message: "Cart not found" });
   }
 
-  const itemOrdered = cart.ItemsOrdered.find(item =>
+  const itemOrdered = cart.ItemsOrdered.find((item) =>
     item._id.equals(itemOrderedId)
   );
 
   if (!itemOrdered) {
-    return sendResponse(res, status.Fail, 404, { message: "Item not found in cart" });
+    return sendResponse(res, status.Fail, 404, {
+      message: "Item not found in cart",
+    });
   }
 
   const quantityDelta = newQuantity - itemOrdered.quantity;
@@ -343,12 +322,14 @@ exports.partialUpdateCart = asyncHandler(async (req, res) => {
 
   const product = await Product.findById(itemOrdered.product._id);
   if (!product) {
-    return sendResponse(res, status.Fail, 404, { message: "Product not found" });
+    return sendResponse(res, status.Fail, 404, {
+      message: "Product not found",
+    });
   }
 
   if (product.quantity < quantityDelta) {
     return sendResponse(res, status.Fail, 400, {
-      message: `Only ${product.quantity} items available in stock`
+      message: `Only ${product.quantity} items available in stock`,
     });
   }
 
@@ -362,11 +343,7 @@ exports.partialUpdateCart = asyncHandler(async (req, res) => {
   const totalDelta = pricePerItem * quantityDelta;
   cart.total += totalDelta;
 
-  await Promise.all([
-    product.save(),
-    itemOrdered.save(),
-    cart.save()
-  ]);
+  await Promise.all([product.save(), itemOrdered.save(), cart.save()]);
 
   const productsWithStatus = updatedCart.ItemsOrdered.map(item => ({
     orderedItemId: item._id,
@@ -387,50 +364,52 @@ exports.partialUpdateCart = asyncHandler(async (req, res) => {
 
 });
 
-
-
 exports.removeItemFromCart = asyncHandler(async (req, res) => {
-
   const { itemOrderedId } = req.body;
   const userId = req.params.id;
 
-  const cart = await Cart.findOne({ user: userId, status: 'pending' })
-    .populate({
-      path: 'ItemsOrdered',
+  const cart = await Cart.findOne({ user: userId, status: "pending" }).populate(
+    {
+      path: "ItemsOrdered",
       match: { _id: itemOrderedId },
       populate: {
-        path: 'product',
-        select: 'price discount quantity'
-      }
-    });
+        path: "product",
+        select: "price discount quantity",
+      },
+    }
+  );
 
   if (!cart) {
     return sendResponse(res, status.Fail, 404, { message: "Cart not found" });
   }
 
   if (!cart.ItemsOrdered.length) {
-    return sendResponse(res, status.Fail, 404, { message: "Item not found in cart" });
+    return sendResponse(res, status.Fail, 404, {
+      message: "Item not found in cart",
+    });
   }
 
-  const itemToRemove = cart.ItemsOrdered.find(item =>
+  const itemToRemove = cart.ItemsOrdered.find((item) =>
     item._id.equals(itemOrderedId)
   );
 
-
   if (!itemToRemove) {
-    return sendResponse(res, status.Fail, 404, { message: "Item not found in cart" });
+    return sendResponse(res, status.Fail, 404, {
+      message: "Item not found in cart",
+    });
   }
 
   const product = await Product.findById(itemToRemove.product._id);
 
   if (!product) {
-    return sendResponse(res, status.Fail, 404, { message: "Product not found" });
+    return sendResponse(res, status.Fail, 404, {
+      message: "Product not found",
+    });
   }
 
-  await Product.findByIdAndUpdate(
-    itemToRemove.product._id,
-    { $inc: { quantity: itemToRemove.quantity } }
-  );
+  await Product.findByIdAndUpdate(itemToRemove.product._id, {
+    $inc: { quantity: itemToRemove.quantity },
+  });
 
   const pricePerItem = product.discount
     ? product.price * (1 - product.discount / 100)
@@ -443,10 +422,8 @@ exports.removeItemFromCart = asyncHandler(async (req, res) => {
   await ItemOrdered.findByIdAndDelete(itemOrderedId);
   await cart.save();
 
-
   sendResponse(res, status.Success, 200, null);
 });
-
 
 exports.deleteCart = asyncHandler(async (req, res) => {
   const cart = await Cart.findByIdAndDelete(req.params.id);
@@ -460,13 +437,7 @@ exports.deleteCart = asyncHandler(async (req, res) => {
     );
   }
 
-  sendResponse(
-    res,
-    status.Success,
-    200,
-    { cart },
-    "cart deleted successfully"
-  );
+  sendResponse(res, status.Success, 200, { cart }, "cart deleted successfully");
 });
 
 exports.deleteAllCarts = asyncHandler(async (req, res) => {
@@ -489,4 +460,3 @@ exports.deleteAllCarts = asyncHandler(async (req, res) => {
     "All carts deleted successfully"
   );
 });
-

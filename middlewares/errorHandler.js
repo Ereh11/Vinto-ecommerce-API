@@ -1,10 +1,17 @@
 const sendResponse = require("../utils/sendResponse.js");
-const status = require("../utils/status.js");
+const AppError = require("../utils/appError");
+const status = require("../utils/status");
 
 const errorHandler = (err, req, res, next) => {
-  console.error("Error:", err.message);
+  let { statusCode, message } = err;
 
-  sendResponse(res, status.Error, 500, null, "Internal Server Error");
+  if (!(err instanceof AppError)) {
+    statusCode = 500;
+    message = "Internal Server Error";
+    console.error("Unexpected Error:", err);
+  }
+
+  sendResponse(res, status.Fail, statusCode, null, message);
 };
 
 module.exports = errorHandler;
