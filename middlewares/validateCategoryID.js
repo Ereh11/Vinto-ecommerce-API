@@ -1,6 +1,6 @@
 const validator = require("validator");
 const sendResponse = require("../utils/sendResponse");
-const { status } = require("../utils/status.js");
+const status = require("../utils/status.js");
 
 const validateCategoryID = async (req, res, next) => {
   const { id } = req.params;

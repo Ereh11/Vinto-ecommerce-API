@@ -3,8 +3,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
-const stripeRoutes = require('./routes/stripe.route.js');
-const productRoutes = require("./routes/product.route.js")
+const stripeRoutes = require("./routes/stripe.route.js");
+const productRoutes = require("./routes/product.route.js");
 const categoryRoutes = require("./routes/category.route.js");
 const likeRoutes = require("./routes/itemLiked.route.js");
 const wishlistRoutes = require("./routes/wishedList.route.js");
@@ -13,7 +13,6 @@ const cartRoutes = require("./routes/cart.route.js");
 const shipmentInfoRoutes = require("./routes/shipmentInfo.route.js");
 const userRouter = require("./routes/user.route");
 const authRouter = require("./routes/authentication/user.route");
-const productRoutes = require("./routes/product.route.js")
 const profileRouter = require("./routes/profile.route");
 const errorHandler = require("./middlewares/errorHandler.js");
 const app = express();
@@ -34,7 +33,6 @@ mongoose
 app.use(cors());
 app.use(express.json());
 
-
 // Routes
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
@@ -46,13 +44,18 @@ app.use("/api/itemOrdered", itemOrderedRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/shipmentInfo", shipmentInfoRoutes);
 app.use("/api/products", productRoutes);
-app.use('/api/stripe', stripeRoutes);
+app.use("/api/stripe", stripeRoutes);
 
 app.use(errorHandler);
 
-
-app.all('*', (req, res) => {
-  sendResponse(res, status.fail, 404, null, `Route '${req.originalUrl}' not found`);
+app.all("*", (req, res) => {
+  sendResponse(
+    res,
+    status.fail,
+    404,
+    null,
+    `Route '${req.originalUrl}' not found`
+  );
 });
 
 app.listen(4000, () => {
@@ -64,4 +67,3 @@ process.on("unhandledRejection", (err) => {
   console.error("Unhandled Rejection! Shutting down...", err);
   server.close(() => process.exit(1));
 });
-
