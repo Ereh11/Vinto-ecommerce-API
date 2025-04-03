@@ -55,9 +55,16 @@ const createProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
+    const updateData = { ...req.body };
+
+    // Handle file upload if there is one
+    if (req.file) {
+      updateData.picture = req.file.path; // or however you're storing the image URL
+    }
+
     const profile = await Profile.findOneAndUpdate(
       { user: req.params.id },
-      req.body,
+      updateData,
       {
         new: true,
         runValidators: true,

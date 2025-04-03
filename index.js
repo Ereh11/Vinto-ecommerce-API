@@ -13,6 +13,7 @@ const cartRoutes = require("./routes/cart.route.js");
 const shipmentInfoRoutes = require("./routes/shipmentInfo.route.js");
 const userRouter = require("./routes/user.route");
 const authRouter = require("./routes/authentication/user.route");
+//const productRoutes = require("./routes/product.route.js")
 const profileRouter = require("./routes/profile.route");
 const errorHandler = require("./middlewares/errorHandler.js");
 const app = express();
@@ -30,7 +31,12 @@ mongoose
   });
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:4200", // Angular frontend URL
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Routes
@@ -67,3 +73,5 @@ process.on("unhandledRejection", (err) => {
   console.error("Unhandled Rejection! Shutting down...", err);
   server.close(() => process.exit(1));
 });
+
+//

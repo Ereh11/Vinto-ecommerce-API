@@ -9,6 +9,7 @@ const {
   resetPassword,
   verifyOTP,
   resendOTP,
+  updatePassword,
 } = require("../../controllers/authentications");
 
 router.post("/register", register);
@@ -17,5 +18,6 @@ router.post("/resend-otp", resendOTP);
 router.post("/login", login);
 router.post("/forgot-password", forgotPassword);
 router.patch("/reset-password/:token", resetPassword);
+router.patch("/update-password/:id", updatePassword);
 
 module.exports = router;
