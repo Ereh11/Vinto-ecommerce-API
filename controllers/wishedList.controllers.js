@@ -83,14 +83,20 @@ const getWishlistItem = asyncHandler(async (req, res) => {
 // ----------------- Add Item to Wishlist -----------------
 const addToWishlist = asyncHandler(async (req, res) => {
   const { user, products } = req.body;
- 
+
   const updatedWishlist = await WishedList.findOneAndUpdate(
     { user },
     { $addToSet: { products: { $each: products } } },
     { new: true, upsert: true }
   ).populate("products");
 
-  sendResponse(res, status.Success, 200, { wishlist: updatedWishlist }, "Item added to wishlist");
+  sendResponse(
+    res,
+    status.Success,
+    200,
+    { wishlist: updatedWishlist },
+    "Item added to wishlist"
+  );
 });
 
 // ----------------- Remove Item from Wishlist -----------------

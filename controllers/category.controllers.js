@@ -1,7 +1,7 @@
 const { Category } = require("../models/category.modle.js");
 const sendResponse = require("../utils/sendResponse.js");
 const asyncHandler = require("../middlewares/asyncHandler.js");
-const  status  = require("../utils/status.js");
+const status = require("../utils/status.js");
 
 // GET all categories
 exports.getAllCategories = asyncHandler(async (req, res) => {

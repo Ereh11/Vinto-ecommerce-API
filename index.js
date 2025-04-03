@@ -3,8 +3,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
-const stripeRoutes = require('./routes/stripe.route.js');
-const productRoutes = require("./routes/product.route.js")
+const stripeRoutes = require("./routes/stripe.route.js");
+const productRoutes = require("./routes/product.route.js");
 const categoryRoutes = require("./routes/category.route.js");
 const likeRoutes = require("./routes/itemLiked.route.js");
 const wishlistRoutes = require("./routes/wishedList.route.js");
@@ -39,7 +39,6 @@ app.use(
 );
 app.use(express.json());
 
-
 // Routes
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
@@ -55,9 +54,14 @@ app.use("/api/liked", likeRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use(errorHandler);
 
-
-app.all('*', (req, res) => {
-  sendResponse(res, status.fail, 404, null, `Route '${req.originalUrl}' not found`);
+app.all("*", (req, res) => {
+  sendResponse(
+    res,
+    status.fail,
+    404,
+    null,
+    `Route '${req.originalUrl}' not found`
+  );
 });
 
 app.listen(4000, () => {
