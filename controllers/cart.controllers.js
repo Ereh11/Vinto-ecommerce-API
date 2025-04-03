@@ -89,18 +89,6 @@ exports.getMyCart = asyncHandler(async (req, res) => {
   }
 
   const formattedResponse = {
-    cartId: cart._id,
-    date: cart.date,
-    total: cart.total,
-    status: cart.status,
-    items: productsWithStatus,
-  };
-
-  if (cart.length === 0) {
-    return sendResponse(res, status.Fail, 404, { cart: null }, "No Cart found");
-  }
-
-  const formattedResponse = {
     // cartId: cart._id,
     date: cart.date,
     total: cart.total,
