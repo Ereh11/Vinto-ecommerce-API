@@ -90,6 +90,7 @@ exports.getMyCart = asyncHandler(async (req, res) => {
     });
 
   const productsWithStatus = cart.ItemsOrdered.map(item => ({
+    orderedItemId: item._id,
     product: item.product ? item.product : null,
     quantity: item.quantity,
     status: cart.status,
@@ -106,7 +107,7 @@ exports.getMyCart = asyncHandler(async (req, res) => {
   }
 
   const formattedResponse = {
-    // cartId: cart._id,
+    cartId: cart._id,
     date: cart.date,
     total: cart.total,
     status: cart.status,
@@ -367,7 +368,23 @@ exports.partialUpdateCart = asyncHandler(async (req, res) => {
     cart.save()
   ]);
 
-  sendResponse(res, status.Success, 204, null);
+  const productsWithStatus = updatedCart.ItemsOrdered.map(item => ({
+    orderedItemId: item._id,
+    product: item.product ? item.product : null,
+    quantity: item.quantity,
+    status: updatedCart.status,
+  }));
+
+  const formattedResponse = {
+    _id: updatedCart._id,
+    date: updatedCart.date,
+    total: updatedCart.total,
+    status: updatedCart.status,
+    items: productsWithStatus
+  };
+
+  sendResponse(res, status.Success, 200, { cart: formattedResponse });
+
 });
 
 
