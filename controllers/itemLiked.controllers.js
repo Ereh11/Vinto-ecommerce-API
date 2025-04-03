@@ -56,7 +56,7 @@ const getLikedItemsByUserId = asyncHandler(async (req, res) => {
 const likeItem = asyncHandler(async (req, res) => {
   const { userId, productId } = req.body;
 
-  //already liked wla la
+  // Check if the item is already liked
   const existingLike = await ItemLiked.findOne({
     user: userId,
     product: productId,

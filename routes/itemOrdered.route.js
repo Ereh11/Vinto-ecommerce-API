@@ -7,7 +7,6 @@ const validateItemID = require("../middlewares/validateItemID");
 router.route("/")
     .get(itemOrderedController.getAllItemOrdered)
     .post(validateItemOrderedSchema, itemOrderedController.createItemOrdered)
-    .get(itemOrderedController.getAllItemOrdered)
     .delete(itemOrderedController.deleteAllItemOrdered);
 router.route("/:id")
     .get(validateItemID, itemOrderedController.getItemOrderedById)

@@ -333,18 +333,18 @@ exports.partialUpdateCart = asyncHandler(async (req, res) => {
 
   await Promise.all([product.save(), itemOrdered.save(), cart.save()]);
 
-  const productsWithStatus = updatedCart.ItemsOrdered.map(item => ({
+  const productsWithStatus = cart.ItemsOrdered.map(item => ({
     orderedItemId: item._id,
     product: item.product ? item.product : null,
     quantity: item.quantity,
-    status: updatedCart.status,
+    status: cart.status,
   }));
 
   const formattedResponse = {
-    _id: updatedCart._id,
-    date: updatedCart.date,
-    total: updatedCart.total,
-    status: updatedCart.status,
+    _id: cart._id,
+    date: cart.date,
+    total: cart.total,
+    status: cart.status,
     items: productsWithStatus
   };
 

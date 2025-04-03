@@ -2,7 +2,8 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-
+const status = require("./utils/status.js");
+const sendResponse = require("./utils/sendResponse.js");
 const stripeRoutes = require("./routes/stripe.route.js");
 const productRoutes = require("./routes/product.route.js");
 const categoryRoutes = require("./routes/category.route.js");
@@ -44,15 +45,12 @@ app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/categories", categoryRoutes);
-app.use("/api/likes", likeRoutes);
-app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/itemOrdered", itemOrderedRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/shipmentInfo", shipmentInfoRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/liked", likeRoutes);
 app.use("/api/wishlist", wishlistRoutes);
-app.use(errorHandler);
 
 app.all("*", (req, res) => {
   sendResponse(
