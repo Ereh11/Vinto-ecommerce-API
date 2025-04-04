@@ -30,12 +30,15 @@ const getallproducts = async (req, res, next) => {
                 "No products found"
             );
         }
+        const totalProducts = await Product.countDocuments(query);
+        const totalPages = Math.ceil(totalProducts / limit);
         return sendResponse(
             res,
             status.Success,
             200,
             { products },
-            "Products retrieved successfully"
+            "Products retrieved successfully",
+            totalPages
         );
     } catch (err) {
         next(err);
@@ -295,17 +298,18 @@ const searchProducts = async (req, res, next) => {
         const options = {
             keys: ["title", "describe"],
             threshold: 0.3,
-            minMatchCharLength: Math.max(2, Math.floor(searched.length / 2)),
+            minMatchCharLength: Math.max(3, Math.floor(searched.length / 2)),
         };
 
         const fuseInstance = new fuse(products, options);
 
         const result = fuseInstance.search(searched).map((r) => r.item);
 
+
         if (result.length === 0) {
             return sendResponse(res, status.Fail, 404, { products: null }, "No products found");
         }
-
+        
         return sendResponse(res, status.Success, 200, { products: result }, "Products retrieved successfully");
     } catch (err) {
         next(err);
@@ -322,34 +326,38 @@ const getFilteredProducts = async (req, res, next) => {
             if (minPrice) query.price.$gte = parseFloat(minPrice);
             if (maxPrice) query.price.$lte = parseFloat(maxPrice);
         }
+
         if (category) {
-            if (!mongoose.Types.ObjectId.isValid(category)) {
-                return next(new appError("Invalid category ID format", 400));
+            const categoryArray = category.split(',');
+            const isValidAll = categoryArray.every(id => mongoose.Types.ObjectId.isValid(id));
+            if (!isValidAll) {
+                return next(new appError("One or more category IDs are invalid", 400));
             }
-            else {
-                query.category = category
-            }
+            query.category = { $in: categoryArray };
         }
 
         let sortOption = {};
         if (sort === "newest") sortOption.addedAt = -1;
         else if (sort === "oldest") sortOption.addedAt = 1;
+
         const skip = (parseInt(page) - 1) * parseInt(limit);
         const products = await Product.find(query)
             .sort(sortOption)
             .skip(skip)
             .limit(parseInt(limit));
-
+        const totalProducts = await Product.countDocuments(query);
+        const totalPages = Math.ceil(totalProducts / limit);
         if (products.length === 0) {
             return sendResponse(res, status.Fail, 404, { products: null }, "No products found");
         }
 
-        return sendResponse(res, status.Success, 200, { products }, "Products retrieved successfully");
+        return sendResponse(res, status.Success, 200, { products }, "Products retrieved successfully", totalPages);
 
     } catch (err) {
         next(err);
     }
 };
+
 
 
 module.exports = {
