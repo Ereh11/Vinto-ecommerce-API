@@ -281,28 +281,25 @@ exports.partialUpdateCart = asyncHandler(async (req, res) => {
   const { itemOrderedId, newQuantity } = req.body;
   const userId = req.params.id;
 
-  const cart = await Cart.findOne({ user: userId, status: "pending" }).populate(
-    {
-      path: "ItemsOrdered",
+  const cart = await Cart.findOne({ user: userId, status: 'pending' })
+    .populate({
+      path: 'ItemsOrdered',
       populate: {
-        path: "product",
-        select: "price discount quantity",
-      },
-    }
-  );
+        path: 'product',
+        select: 'price discount quantity'
+      }
+    });
 
   if (!cart) {
     return sendResponse(res, status.Fail, 404, { message: "Cart not found" });
   }
 
-  const itemOrdered = cart.ItemsOrdered.find((item) =>
+  const itemOrdered = cart.ItemsOrdered.find(item =>
     item._id.equals(itemOrderedId)
   );
 
   if (!itemOrdered) {
-    return sendResponse(res, status.Fail, 404, {
-      message: "Item not found in cart",
-    });
+    return sendResponse(res, status.Fail, 404, { message: "Item not found in cart" });
   }
 
   const quantityDelta = newQuantity - itemOrdered.quantity;
@@ -310,14 +307,12 @@ exports.partialUpdateCart = asyncHandler(async (req, res) => {
 
   const product = await Product.findById(itemOrdered.product._id);
   if (!product) {
-    return sendResponse(res, status.Fail, 404, {
-      message: "Product not found",
-    });
+    return sendResponse(res, status.Fail, 404, { message: "Product not found" });
   }
 
   if (product.quantity < quantityDelta) {
     return sendResponse(res, status.Fail, 400, {
-      message: `Only ${product.quantity} items available in stock`,
+      message: `Only ${product.quantity} items available in stock`
     });
   }
 
@@ -331,26 +326,45 @@ exports.partialUpdateCart = asyncHandler(async (req, res) => {
   const totalDelta = pricePerItem * quantityDelta;
   cart.total += totalDelta;
 
-  await Promise.all([product.save(), itemOrdered.save(), cart.save()]);
+  await Promise.all([
+    product.save(),
+    itemOrdered.save(),
+    cart.save()
+  ]);
 
-  const productsWithStatus = cart.ItemsOrdered.map(item => ({
+  const updatedCart = await Cart.findOne({ user: userId, status: 'pending' })
+    .sort({ date: -1 })
+    .populate({
+      path: 'ItemsOrdered',
+      populate: {
+        path: 'product',
+        model: 'Product',
+      }
+    });
+
+  if (!updatedCart) {
+    return sendResponse(res, status.Fail, 404, { message: "Cart not found after update" });
+  }
+
+  const productsWithStatus = updatedCart.ItemsOrdered.map(item => ({
     orderedItemId: item._id,
     product: item.product ? item.product : null,
     quantity: item.quantity,
-    status: cart.status,
+    status: updatedCart.status,
   }));
 
   const formattedResponse = {
-    _id: cart._id,
-    date: cart.date,
-    total: cart.total,
-    status: cart.status,
+    _id: updatedCart._id,
+    date: updatedCart.date,
+    total: updatedCart.total,
+    status: updatedCart.status,
     items: productsWithStatus
   };
 
   sendResponse(res, status.Success, 200, { cart: formattedResponse });
 
 });
+
 
 exports.removeItemFromCart = asyncHandler(async (req, res) => {
   const { itemOrderedId } = req.body;
@@ -448,3 +462,4 @@ exports.deleteAllCarts = asyncHandler(async (req, res) => {
     "All carts deleted successfully"
   );
 });
+

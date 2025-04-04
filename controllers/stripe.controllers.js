@@ -33,7 +33,7 @@ const checkoutSuccess = async (req, res) => {
       throw new Error('Cart not found for client reference ID');
     }
 
-    res.redirect('http://localhost:4200/checkout-success');
+    res.redirect('http://localhost:4200/');
 
   } catch (error) {
     res.redirect(`http://localhost:4200/checkout-error?message=${encodeURIComponent(error.message)}`);
@@ -83,4 +83,6 @@ const createCheckoutSession = async (req, res) => {
 };
 
 module.exports = { createCheckoutSession, checkoutSuccess };
+
+
 
