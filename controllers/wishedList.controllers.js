@@ -218,20 +218,44 @@ const removeItemFromWishlist = asyncHandler(async (req, res) => {
 // ----------------- Clear Wishlist -----------------
 const clearWishlist = asyncHandler(async (req, res) => {
   const { userId } = req.params;
-  const wishlist = await WishedList.findOne({ user: userId });
-
-  if (!wishlist) {
+  if (!userId) {
     return sendResponse(
       res,
       status.Fail,
       400,
       { cleared: false },
-      "No wishlist found to clear"
+      "No user ID provided"
     );
   }
-
-  await WishedList.deleteOne({ user: userId });
-  sendResponse(res, status.Success, 200, { cleared: true }, "Wishlist cleared");
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return sendResponse(
+      res,
+      status.Fail,
+      400,
+      { cleared: false },
+      "Invalid user ID format"
+    );
+  }
+  const wishlist = await WishedList.findOne({ user: userId });
+  if (!wishlist) {
+    return sendResponse(
+      res,
+      status.Fail,
+      404,
+      { cleared: false },
+      "No wishlist found for this user"
+    );
+  } else {
+    wishlist.products = [];
+    await wishlist.save();
+    sendResponse(
+      res,
+      status.Success,
+      200,
+      { cleared: true },
+      "Wishlist cleared successfully"
+    );
+  }
 });
 
 module.exports = {
