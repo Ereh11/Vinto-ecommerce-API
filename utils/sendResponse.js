@@ -3,10 +3,10 @@ const sendResponse = (res, status, code, data, msg, totalpages = 1) => {
     status,
     code,
     data: data !== null ? { ...data } : data,
-    message: { text: msg },
-    totalPages: totalpages,
+    message: { text: msg }
   });
 };
+
 module.exports = sendResponse;
 
 

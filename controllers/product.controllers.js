@@ -13,7 +13,7 @@ const status = require("../utils/status.js");
 const getallproducts = async (req, res, next) => {
     try {
         const query = req.query;
-        const limit = query.limit ? parseInt(query.limit) : 9;
+        const limit = query.limit ? parseInt(query.limit) : 8;
         const page = query.page ? parseInt(query.page) : 1;
         const startIndex = (page - 1) * limit;
         if (limit <= 0 || page <= 0) {
@@ -36,9 +36,8 @@ const getallproducts = async (req, res, next) => {
             res,
             status.Success,
             200,
-            { products },
+            { products, totalPages: totalPages },
             "Products retrieved successfully",
-            totalPages
         );
     } catch (err) {
         next(err);
@@ -317,7 +316,7 @@ const searchProducts = async (req, res, next) => {
 };
 const getFilteredProducts = async (req, res, next) => {
     try {
-        const { minPrice, maxPrice, sort, category, page = 1, limit = 12 } = req.query;
+        const { minPrice, maxPrice, sort, category, page = 1, limit = 8 } = req.query;
 
         let query = {};
 
@@ -348,10 +347,10 @@ const getFilteredProducts = async (req, res, next) => {
         const totalProducts = await Product.countDocuments(query);
         const totalPages = Math.ceil(totalProducts / limit);
         if (products.length === 0) {
-            return sendResponse(res, status.Fail, 404, { products: null }, "No products found");
+            return sendResponse(res, status.Fail, 404, { products: null}, "No products found");
         }
 
-        return sendResponse(res, status.Success, 200, { products }, "Products retrieved successfully", totalPages);
+        return sendResponse(res, status.Success, 200, { products,  totalPages}, "Products retrieved successfully");
 
     } catch (err) {
         next(err);
