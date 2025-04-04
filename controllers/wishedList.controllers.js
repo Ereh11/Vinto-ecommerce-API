@@ -1,5 +1,6 @@
 const asyncHandler = require("../middlewares/asyncHandler.js");
 const sendResponse = require("../utils/sendResponse.js");
+const appError = require("../utils/appError.js");
 const status = require("../utils/status.js");
 const { WishedList } = require("../models/wishedList.modle.js");
 const { default: mongoose } = require("mongoose");
@@ -124,126 +125,63 @@ const addToWishlist = asyncHandler(async (req, res) => {
 
 
 // ----------------- Remove Item from Wishlist -----------------
+
 const removeItemFromWishlist = asyncHandler(async (req, res) => {
   const { user, products } = req.body;
-  if (!user) {
-    return sendResponse(
-      res,
-      status.Fail,
-      400,
-      { removed: false },
-      "No user ID provided"
-    );
+
+  // Validate that products is an array and contains valid product IDs
+  if (!Array.isArray(products) || products.length === 0) {
+    throw new appError("No product IDs provided", 400, status.Fail);
   }
-  if (!mongoose.Types.ObjectId.isValid(user)) {
-    return sendResponse(
-      res,
-      status.Fail,
-      400,
-      { removed: false },
-      "Invalid user ID format"
-    );
-  }
-  if (!products || !Array.isArray(products) || products.length === 0) {
-    return sendResponse(
-      res,
-      status.Fail,
-      400,
-      { removed: false },
-      "No product IDs provided"
-    );
-  }
+
   if (products.some((id) => !mongoose.Types.ObjectId.isValid(id))) {
-    return sendResponse(
-      res,
-      status.Fail,
-      400,
-      { removed: false },
-      "Invalid product ID format"
-    );
+    throw new appError("Invalid product ID format", 400, status.Fail);
   }
-  const wishlist = await WishedList.findOne({ user: user });
+
+  // Find wishlist for the user
+  const wishlist = await WishedList.findOne({ user });
   if (!wishlist) {
-    return sendResponse(
-      res,
-      status.Fail,
-      404,
-      { removed: false },
-      "No wishlist found for this user"
-    );
-  } else {
-    const productsToRemove = products.filter((productId) =>
-      wishlist.products.includes(productId)
-    );
-    if (productsToRemove.length === 0) {
-      return sendResponse(
-        res,
-        status.Fail,
-        400,
-        { removed: false },
-        "No matching products found in the wishlist"
-      );
-    } else {
-      const productsToRemove = products.filter((productId) =>
-        wishlist.products.includes(productId.toString()) // Ensure the same data type
-      );
-      
-      if (productsToRemove.length === 0) {
-        return sendResponse(
-          res,
-          status.Fail,
-          400,
-          { removed: false },
-          "No matching products found in the wishlist"
-        );
-      } else {
-        // Ensure product IDs are compared correctly
-        wishlist.products = wishlist.products.filter(
-          (productId) => !productsToRemove.includes(productId.toString()) // Ensure same type comparison
-        );
-      
-        await wishlist.save();
-        sendResponse(
-          res,
-          status.Success,
-          200,
-          { removed: true },
-          "Item removed from wishlist successfully"
-        );
-      }
-    }
+    throw new appError("No wishlist found for this user", 404, status.Fail);
   }
+
+  // Filter out the product IDs to be removed
+  const productsToRemove = products.filter((productId) =>
+    wishlist.products.includes(productId.toString()) // Ensure consistent comparison with strings
+  );
+
+  // If no matching products are found
+  if (productsToRemove.length === 0) {
+    throw new appError("No matching products found in the wishlist", 400, status.Fail);
+  }
+
+  // Remove the matched products from the wishlist
+  wishlist.products = wishlist.products.filter(
+    (productId) => !productsToRemove.includes(productId.toString()) // Ensure same type comparison
+  );
+
+  // Save the updated wishlist
+  await wishlist.save();
+
+  // Send success response
+  sendResponse(
+    res,
+    status.Success,
+    200,
+    { removed: true },
+    "Item(s) removed from wishlist successfully"
+  );
 });
 
 // ----------------- Clear Wishlist -----------------
 const clearWishlist = asyncHandler(async (req, res) => {
   const { userId } = req.params;
-  if (!userId) {
-    return sendResponse(
-      res,
-      status.Fail,
-      400,
-      { cleared: false },
-      "No user ID provided"
-    );
-  }
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return sendResponse(
-      res,
-      status.Fail,
-      400,
-      { cleared: false },
-      "Invalid user ID format"
-    );
-  }
   const wishlist = await WishedList.findOne({ user: userId });
   if (!wishlist) {
-    return sendResponse(
-      res,
-      status.Fail,
+    throw new appError(
+      "No wishlist found for this user",
       404,
-      { cleared: false },
-      "No wishlist found for this user"
+      status.Fail,
+      null
     );
   } else {
     wishlist.products = [];
