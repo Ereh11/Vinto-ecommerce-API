@@ -1,14 +1,24 @@
-const { ItemOrdered } = require("../models/itemOrdered.modle");
 const sendResponse = require("../utils/sendResponse");
 const asyncHandler = require("../middlewares/asyncHandler");
 const status = require("../utils/status");
+const appError = require("../utils/appError");
+const User = require("../models/user.modle");
+const { ItemOrdered } = require("../models/itemOrdered.modle");
+const { Product } = require("../models/product.modle");
 
-// Post
+// ----------------- POST -----------------
 const createItemOrdered = asyncHandler(async (req, res) => {
   const { product, user, quantity } = req.body;
+  const existingUser = await User.findById(user);
+  const existingProduct = await Product.findById(product);
+  if (!existingProduct) {
+    throw new appError("Product not found", 404, status.Fail);
+  }
+  if (!existingUser) {
+    throw new appError("User not found", 404, status.Fail);
+  }
   const itemOrderedInstance = new ItemOrdered({ product, user, quantity });
   await itemOrderedInstance.save();
-
   sendResponse(
     res,
     status.Success,
@@ -18,17 +28,11 @@ const createItemOrdered = asyncHandler(async (req, res) => {
   );
 });
 
-// Get All Items Ordered
+// ----------------- GET ALL ITEMS ORDERED -----------------
 const getAllItemOrdered = asyncHandler(async (req, res) => {
   const itemsOrdered = await ItemOrdered.find();
   if (itemsOrdered.length === 0) {
-    return sendResponse(
-      res,
-      status.Fail,
-      404,
-      { categories: null },
-      "No categories found"
-    );
+    throw new appError("No Item Ordered found", 404, status.Fail);
   }
   sendResponse(
     res,
@@ -38,17 +42,11 @@ const getAllItemOrdered = asyncHandler(async (req, res) => {
     "All Item Ordered fetched successfully"
   );
 });
-// Get by ID
+// ----------------- GET ITEM ORDERED BY ID -----------------
 const getItemOrderedById = asyncHandler(async (req, res) => {
   const itemOrdered = await ItemOrdered.findById(req.params.id);
   if (!itemOrdered) {
-    return sendResponse(
-      res,
-      status.Fail,
-      404,
-      { itemOrdered: null },
-      "Item Ordered not found"
-    );
+    throw new appError("Item Ordered not found", 404, status.Fail);
   }
   sendResponse(
     res,
@@ -58,16 +56,14 @@ const getItemOrderedById = asyncHandler(async (req, res) => {
     "Item Ordered fetched successfully"
   );
 });
-// Delete All Items Ordered
+// ----------------- DELETE ALL -----------------
 const deleteAllItemOrdered = asyncHandler(async (req, res) => {
   const deleted = await ItemOrdered.deleteMany();
   if (deleted.deletedCount === 0) {
-    return sendResponse(
-      res,
-      status.Fail,
+    throw new appError(
+      "No Item Ordered found to delete",
       404,
-      { itemOrdered: null },
-      "No Item Ordered found"
+      status.Fail
     );
   }
   sendResponse(
@@ -78,18 +74,12 @@ const deleteAllItemOrdered = asyncHandler(async (req, res) => {
     "All Item Ordered deleted successfully"
   );
 });
-// Delete by ID
+// ----------------- DELETE ITEM ORDERED BY ID -----------------
 const deleteItemOrderedById = asyncHandler(async (req, res) => {
   const itemOrdered = await ItemOrdered.findByIdAndDelete(req.params.id);
 
   if (!itemOrdered) {
-    return sendResponse(
-      res,
-      status.Fail,
-      404,
-      { itemOrdered: null },
-      "Item Ordered not found"
-    );
+    throw new appError("Item Ordered not found", 404, status.Fail);
   }
   sendResponse(
     res,
@@ -99,8 +89,18 @@ const deleteItemOrderedById = asyncHandler(async (req, res) => {
     "Item Ordered deleted successfully"
   );
 });
-// PUT
+// ----------------- UPDATE ITEM ORDERED BY ID -----------------
 const updateItemOrderedById = asyncHandler(async (req, res) => {
+  const { product, user, quantity } = req.body;
+  
+  const existingUser = await User.findById(user);
+  const existingProduct = await Product.findById(product);
+  if (!existingProduct) {
+    throw new appError("Product not found", 404, status.Fail);
+  }
+  if (!existingUser) {
+    throw new appError("User not found", 404, status.Fail);
+  }
   const itemOrdered = await ItemOrdered.findByIdAndUpdate(
     req.params.id,
     req.body,
@@ -123,7 +123,7 @@ const updateItemOrderedById = asyncHandler(async (req, res) => {
     "Item Ordered updated successfully"
   );
 });
-// Patch
+// ----------------- UPDATE PARTIALLY ITEM ORDERED BY ID -----------------
 const updatePartialyItemOrderedById = asyncHandler(async (req, res) => {
   const itemOrdered = await ItemOrdered.findByIdAndUpdate(
     req.params.id,
@@ -131,20 +131,14 @@ const updatePartialyItemOrderedById = asyncHandler(async (req, res) => {
     { new: true, runValidators: true }
   );
   if (!itemOrdered) {
-    return sendResponse(
-      res,
-      status.Fail,
-      404,
-      { itemOrdered: null },
-      "Item not found"
-    );
+    throw new appError("Item Ordered not found", 404, status.Fail);
   }
   sendResponse(
     res,
     status.Success,
     200,
     { itemOrdered },
-    "Item updated successfully"
+    "Item Ordered updated successfully"
   );
 });
 
