@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const sendResponse = require("../utils/sendResponse");
-const { status } = require("../utils/status");
+const status = require("../utils/status");
 
 const validateIds = (req, res, next) => {
   const { userId, productId } = req.body;

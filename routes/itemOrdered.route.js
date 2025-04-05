@@ -1,17 +1,17 @@
 const express = require("express");
 const router = express.Router();
 const itemOrderedController = require("../controllers/itemOrdered.controllers");
-const validateItemOrderedSchema = require("../middlewares/validateItemOrdered");
-const validateItemID = require("../middlewares/validateItemID");
+const validateItemOrder = require("../middlewares/validations/validateItemOrder");
+const validateObjectId = require("../middlewares/validateObjectId");
 
 router.route("/")
-    .post(validateItemOrderedSchema, itemOrderedController.createItemOrdered)
     .get(itemOrderedController.getAllItemOrdered)
+    .post(validateItemOrder, itemOrderedController.createItemOrdered)
     .delete(itemOrderedController.deleteAllItemOrdered);
 router.route("/:id")
-    .get(validateItemID, itemOrderedController.getItemOrderedById)
-    .delete(validateItemID, itemOrderedController.deleteItemOrderedById)
-    .put(validateItemID, validateItemOrderedSchema, itemOrderedController.updateItemOrderedById)
-    .patch(validateItemID, validateItemOrderedSchema, itemOrderedController.updatePartialyItemOrderedById);
+    .get(validateObjectId("id"), itemOrderedController.getItemOrderedById)
+    .delete(validateObjectId("id"), itemOrderedController.deleteItemOrderedById)
+    .put(validateObjectId("id"), validateItemOrder, itemOrderedController.updateItemOrderedById)
+    .patch(validateObjectId("id"), itemOrderedController.updatePartialyItemOrderedById);
     
 module.exports = router;

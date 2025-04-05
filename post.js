@@ -24,35 +24,28 @@ const connectDB = async () => {
 // Seed the database with a sample product that references an existing category
 const seedDatabase = async () => {
   try {
-    // Find the existing category by title (change "Electronics" as needed)
-    const existingCategory = await Category.findOne({ title: "Furniture" });
-    if (!existingCategory) {
-      console.error("Category not found. Please seed the category first.");
-      process.exit(1);
-    }
-
     // Generate the public URL for the product image
     const productImageUrl01 = await generatePublicUrl("./image.png");
     const productImageUrl02 = await generatePublicUrl("./image copy.png");
     const productImageUrl03 = await generatePublicUrl("./image copy 2.png");
     //const productImageUrl04 = await generatePublicUrl("./image copy 3.png");
     const sampleProduct = {
-      title: "Mainsail Striped Sweater",
-      price: 3199.99,
-      describe: "Classic and timeless vintage inspired cream colored knit sweater with dark navy blue horizontal stripes. Features long puffed sleeves, drop shoulders, and cozy slightly oversize fit.",
-      rate: 4.9,
+      title: "Amouage Silver Gilt Malachite Bottle Islamic Arabic",
+      price: 10500.75,
+      describe: "Islamic Amouage vintage perfume bottle of 24-karat yellow gold on silver and malachite, on malachite stand. Complete with fitted leather, velvet and silk-lined box. Appears to be full.",
+      rate: 5,
       discount: 0,
-      quantity: 60,
+      quantity: 1,
       characteristics: [
-        "Fabric: 100% Cotton",
-        "Measurements: 30 length / 20 across chest (relaxed) / 27 raglan sleeve",
-        "Puffed sleeves",
-        "Dropped shoulders",
-        "Imported"
+        "Era: 20th Century",
+        "Material: Malachite, Silver",
+        "Condition: Excellent",
+        "Dimensions: Height: 4 in (10.16 cm)Width: 2 in (5.08 cm)Depth: 2 in (5.08 cm)",
+        "Place of Origin: France",
       ],
-      addedAt: "2025-03-08T00:00:02.012+00:00",
+      addedAt: "2025-03-14T00:00:02.012+00:00",
       img: [productImageUrl01, productImageUrl02, productImageUrl03],// productImageUrl04],
-      category: "67ba3e8716548f20d6370e86", 
+      category: "67ba3e261c5c6144284d9aaa", 
     };
 
     // Insert the sample product into the database
