@@ -67,10 +67,20 @@ app.listen(4000, () => {
   console.log("Server is listening on port 4000");
 });
 
-//For unKnown Error
-process.on("unhandledRejection", (err) => {
-  console.error("Unhandled Rejection! Shutting down...", err);
-  server.close(() => process.exit(1));
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception! Shutting down...");
+  console.error(err);
+  process.exit(1);
 });
 
-//
+// Handle Unhandled Rejections
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled Rejection! Shutting down...");
+  console.error(err);
+
+  server.close(() => {
+    process.exit(1);
+  });
+});
+
+app.use(errorHandler);

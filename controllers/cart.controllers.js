@@ -10,10 +10,18 @@ getTotal = (quantity, price, discount = 0) => {
   return (price - (discount / 100) * price) * quantity;
 };
 
+
 exports.addToCart = asyncHandler(async (req, res) => {
   const { productId, quantity = 1 } = req.body;
   const userId = req.params.id;
+
+  const product = await Product.findById(productId);
+  if (!product || product.quantity < 1) {
+    return sendResponse(res, status.Fail, 400, null, "Product unavailable");
+  }
+
   let cart = await Cart.findOne({ user: userId, status: "pending" });
+
 
   if (cart) {
     // I have the cart
@@ -22,12 +30,21 @@ exports.addToCart = asyncHandler(async (req, res) => {
       product: productId,
       user: userId,
     });
+
     // I have the product
     if (existingItemOrdered) {
+      const availableQuantity = product.quantity - existingItemOrdered.quantity;
+
+      if (quantity > availableQuantity) {
+        return res.status(400).json({
+          error: `Only ${availableQuantity} available in stock`,
+          maxAllowed: availableQuantity
+        });
+      }
       existingItemOrdered.quantity += quantity;
       await existingItemOrdered.save();
-      const product = await Product.findById(productId);
-      product.quantity = product.quantity - quantity; // Removing the ordered quantity from the product quantity
+
+      product.quantity = product.quantity - quantity;
 
       if (product) {
         if (product.discount) {
@@ -43,6 +60,14 @@ exports.addToCart = asyncHandler(async (req, res) => {
   } else {
     cart = new Cart({ user: userId, ItemsOrdered: [], total: 0 });
   }
+
+
+  if (quantity > product.quantity) {
+    return res.status(400).json({
+      error: `Only ${product.quantity} available in stock`,
+      maxAllowed: product.quantity
+    });
+  }
   const itemOrdered = new ItemOrdered({
     product: productId,
     user: userId,
@@ -52,7 +77,6 @@ exports.addToCart = asyncHandler(async (req, res) => {
 
   cart.ItemsOrdered.push(itemOrdered._id);
 
-  const product = await Product.findById(productId);
 
   if (product) {
     if (product.discount) {
@@ -302,13 +326,71 @@ exports.partialUpdateCart = asyncHandler(async (req, res) => {
     return sendResponse(res, status.Fail, 404, { message: "Item not found in cart" });
   }
 
-  const quantityDelta = newQuantity - itemOrdered.quantity;
-  const oldQuantity = itemOrdered.quantity;
-
   const product = await Product.findById(itemOrdered.product._id);
   if (!product) {
     return sendResponse(res, status.Fail, 404, { message: "Product not found" });
   }
+  if (newQuantity <= 0) {
+    product.quantity += itemOrdered.quantity;
+
+    const pricePerItem = itemOrdered.product.discount
+      ? itemOrdered.product.price * (1 - itemOrdered.product.discount / 100)
+      : itemOrdered.product.price;
+    cart.total -= pricePerItem * itemOrdered.quantity;
+
+    cart.ItemsOrdered = cart.ItemsOrdered.filter(item =>
+      !item._id.equals(itemOrderedId)
+    );
+
+    await ItemOrdered.findByIdAndDelete(itemOrderedId);
+
+    await Promise.all([
+      product.save(),
+      cart.save()
+    ]);
+  } else {
+    const quantityDelta = newQuantity - itemOrdered.quantity;
+    const oldQuantity = itemOrdered.quantity;
+    const availableQuantity = product.quantity + oldQuantity;
+
+    if (newQuantity > availableQuantity) {
+      return res.status(400).json({
+        error: `Only ${availableQuantity} available in stock`,
+        maxAllowed: availableQuantity
+      });
+    }
+
+    if (product.quantity < quantityDelta) {
+      return sendResponse(res, status.Fail, 400, {
+        message: `Only ${product.quantity} items available in stock`
+      });
+    }
+
+    product.quantity -= quantityDelta;
+    itemOrdered.quantity = newQuantity;
+    const pricePerItem = itemOrdered.product.discount
+      ? itemOrdered.product.price * (1 - itemOrdered.product.discount / 100)
+      : itemOrdered.product.price;
+    const totalDelta = pricePerItem * quantityDelta;
+    cart.total += totalDelta;
+
+    await Promise.all([
+      product.save(),
+      itemOrdered.save(),
+      cart.save()
+    ]);
+  }
+  const quantityDelta = newQuantity - itemOrdered.quantity;
+  const oldQuantity = itemOrdered.quantity;
+  const availableQuantity = product.quantity - oldQuantity;
+
+  if (newQuantity > availableQuantity) {
+    return res.status(400).json({
+      error: `Only ${availableQuantity} available in stock`,
+      maxAllowed: availableQuantity
+    });
+  }
+
 
   if (product.quantity < quantityDelta) {
     return sendResponse(res, status.Fail, 400, {
@@ -462,4 +544,7 @@ exports.deleteAllCarts = asyncHandler(async (req, res) => {
     "All carts deleted successfully"
   );
 });
+
+
+
 
