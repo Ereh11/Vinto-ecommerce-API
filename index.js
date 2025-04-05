@@ -73,12 +73,11 @@ process.on("uncaughtException", (err) => {
 });
 
 // Handle Unhandled Rejections
-process.on("unhandledRejection", (err) => {
-  console.error("Unhandled Rejection! Shutting down...");
-  console.error(err);
-  server.close(() => {
-    process.exit(1);
-  });
+process.on('unhandledRejection', (err, promise) => {
+  console.error('Unhandled Rejection:', err.message || err);
+  // Handle the error appropriately here (e.g., log it, notify monitoring system, etc.)
+  // You can choose not to exit the process here. It's important not to call process.exit() unless critical
 });
+
 
 app.use(errorHandler);
