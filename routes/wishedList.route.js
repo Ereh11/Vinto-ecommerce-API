@@ -7,11 +7,8 @@ const checkUserIdProvided = require("../middlewares/checkUserIdProvided.js");
 
 
 
-router.get("/:userId", validateIds, wishlistController.getWishlistByUserId);
-
-
 router.route("/:userId")
-  .get(wishlistController.getWishlistByUserId) // Get wishlist by user ID
+  .get(validateObjectId("userId"), wishlistController.getWishlistByUserId) // Get wishlist by user ID
   .delete(checkUserIdProvided, validateObjectId("userId"), wishlistController.clearWishlist); // Clear wishlist
 
 router.route("/")

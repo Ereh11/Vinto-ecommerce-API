@@ -3,6 +3,7 @@ const sendResponse = require("../utils/sendResponse.js");
 const appError = require("../utils/appError.js");
 const status = require("../utils/status.js");
 const { WishedList } = require("../models/wishedList.modle.js");
+const  User = require("../models/user.modle.js");
 const { default: mongoose } = require("mongoose");
 
 // ----------------- Get All Wishlists (Admin) -----------------
@@ -27,22 +28,17 @@ const getAllWishlists = asyncHandler(async (req, res) => {
 });
 
 // ----------------- Get Wishlist by User ID -----------------
+
 const getWishlistByUserId = asyncHandler(async (req, res) => {
   const { userId } = req.params;
-  const wishlist = await WishedList.findOne({ user: userId }).populate(
-    "products"
-  );
 
+  // Find wishlist by userId and populate the products
+  const wishlist = await WishedList.findOne({ user: userId }).populate("products");
   if (!wishlist) {
-    return sendResponse(
-      res,
-      status.Fail,
-      400,
-      { wishlist: [] },
-      "No wishlist found for this user"
-    );
+    throw new appError("No wishlist found for this user", 404, status.Fail);
   }
 
+  // Return the wishlist successfully
   sendResponse(
     res,
     status.Success,
@@ -53,6 +49,7 @@ const getWishlistByUserId = asyncHandler(async (req, res) => {
 });
 
 // ----------------- Get Single Wishlist Item -----------------
+
 const getWishlistItem = asyncHandler(async (req, res) => {
   const { userId, productId } = req.params;
   const wishlist = await WishedList.findOne({
@@ -86,43 +83,52 @@ const getWishlistItem = asyncHandler(async (req, res) => {
 const addToWishlist = asyncHandler(async (req, res) => {
   const { user, products } = req.body;
 
+  // Validate the user ID
   if (!user) {
-    return sendResponse(res, status.Fail, 400, { added: false }, "No user ID provided");
+    throw new appError("No user ID provided", 400, status.Fail);
   }
   if (!mongoose.Types.ObjectId.isValid(user)) {
-    return sendResponse(res, status.Fail, 400, { added: false }, "Invalid user ID format");
+    throw new appError("Invalid user ID format", 400, status.Fail);
   }
-  if (!products || !Array.isArray(products) || products.length === 0) {
-    return sendResponse(res, status.Fail, 400, { added: false }, "No product IDs provided");
+  const existUser = await User.findOne({ _id: user });
+  if (!existUser) {
+    throw new appError("User not found", 404, status.Fail);
+  }
+
+
+  if (!Array.isArray(products) || products.length === 0) {
+    throw new appError("No product IDs provided", 400, status.Fail);
   }
   if (products.some((id) => !mongoose.Types.ObjectId.isValid(id))) {
-    return sendResponse(res, status.Fail, 400, { added: false }, "Invalid product ID format");
+    throw new appError("Invalid product ID format", 400, status.Fail);
   }
 
-  let existingWishlist = await WishedList.findOne({ user: user });
+
+  const existingWishlist = await WishedList.findOne({ user });
 
   if (!existingWishlist) {
-    existingWishlist = await WishedList.create({ user: user, products: products });
+    // If no wishlist exists, create a new one
+    existingWishlist = await WishedList.create({ user, products });
   } else {
+    // Check for products that are not already in the wishlist
     const productsToAdd = products.filter(
       (productId) => !existingWishlist.products.some((p) => p.toString() === productId.toString())
     );
 
     if (productsToAdd.length > 0) {
+      // Add new products to the wishlist
       existingWishlist.products.push(...productsToAdd);
       await existingWishlist.save();
     }
   }
-
   return sendResponse(
     res,
     status.Success,
     200,
-    { added: true },
-    "Item(s) added to wishlist"
+    { existingWishlist },
+    "Item(s) added to wishlist successfully"
   );
 });
-
 
 // ----------------- Remove Item from Wishlist -----------------
 
