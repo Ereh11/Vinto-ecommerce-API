@@ -226,35 +226,47 @@ const getNewArrivals = asyncHandler(async (req, res, next) => {
 });
 // ----------------- Search products -----------------
 const searchProducts = asyncHandler(async (req, res, next) => {
-    const searched = req.query.searched;
-    if (!searched) {
-      throw new appError("Search term is required", 400, status.Fail);
-    }
+  const searched = req.query.searched;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 8;
 
-    const products = await Product.find();
+  if (!searched) {
+    throw new appError("Search term is required", 400, status.Fail);
+  }
 
-    const options = {
-      keys: ["title"],
-      threshold: 0.3,
-      minMatchCharLength: Math.max(3, Math.floor(searched.length / 2)),
-    };
+  const products = await Product.find();
 
-    const fuseInstance = new fuse(products, options);
+  const options = {
+    keys: ["title"],
+    threshold: 0.3,
+    minMatchCharLength: Math.max(3, Math.floor(searched.length / 2)),
+  };
 
-    const result = fuseInstance.search(searched).map((r) => r.item);
+  const fuseInstance = new fuse(products, options);
+  const matchedResults = fuseInstance.search(searched).map((r) => r.item);
 
-    if (result.length === 0) {
-      throw new appError("No products found", 404, status.Fail);
-    }
+  if (matchedResults.length === 0) {
+    throw new appError("No products found", 404, status.Fail);
+  }
 
-    return sendResponse(
-      res,
-      status.Success,
-      200,
-      { products: result },
-      "Products retrieved successfully"
-    );
+  // Pagination logic
+  const total = matchedResults.length;
+  const totalPages = Math.ceil(total / limit);
+  const startIndex = (page - 1) * limit;
+  const paginatedResults = matchedResults.slice(startIndex, startIndex + limit);
+
+  return sendResponse(
+    res,
+    status.Success,
+    200,
+    {
+      paginatedResults,
+      totalPages,
+    },
+    "Products retrieved successfully"
+  );
 });
+
 // ----------------- Filter products -----------------
 const getFilteredProducts = asyncHandler(async (req, res, next) => {
   const { minPrice, maxPrice, sort, category, page = 1, limit = 8 } = req.query;
