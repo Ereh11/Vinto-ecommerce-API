@@ -14,7 +14,6 @@ const cartRoutes = require("./routes/cart.route.js");
 const shipmentInfoRoutes = require("./routes/shipmentInfo.route.js");
 const userRouter = require("./routes/user.route");
 const authRouter = require("./routes/authentication/user.route");
-//const productRoutes = require("./routes/product.route.js")
 const profileRouter = require("./routes/profile.route");
 const errorHandler = require("./middlewares/errorHandler.js");
 const app = express();
@@ -49,7 +48,6 @@ app.use("/api/itemOrdered", itemOrderedRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/shipmentInfo", shipmentInfoRoutes);
 app.use("/api/products", productRoutes);
-app.use("/api/liked", likeRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/stripe", stripeRoutes);
 
@@ -74,13 +72,9 @@ process.on("uncaughtException", (err) => {
 });
 
 // Handle Unhandled Rejections
-process.on("unhandledRejection", (err) => {
-  console.error("Unhandled Rejection! Shutting down...");
-  console.error(err);
-
-  server.close(() => {
-    process.exit(1);
-  });
+process.on('unhandledRejection', (err, promise) => {
+  console.error('Unhandled Rejection:', err.message || err);
 });
+
 
 app.use(errorHandler);
