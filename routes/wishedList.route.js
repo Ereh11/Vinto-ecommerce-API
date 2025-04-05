@@ -17,6 +17,7 @@ router.route("/:userId")
 router.route("/")
   .get(wishlistController.getAllWishlists) // Get all wishlists (Admin)
   .post(wishlistController.addToWishlist) // Add to wishlist
+  .delete(wishlistController.removeItemFromWishlist) // Get wishlist by user ID
 
 
 
