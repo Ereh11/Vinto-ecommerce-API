@@ -49,8 +49,7 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/shipmentInfo", shipmentInfoRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/wishlist", wishlistRoutes);
-app.use('/api/stripe', stripeRoutes);
-
+app.use("/api/stripe", stripeRoutes);
 
 app.all("*", (req, res) => {
   sendResponse(
