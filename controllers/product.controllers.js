@@ -297,7 +297,7 @@ const searchProducts = async (req, res, next) => {
         const options = {
             keys: ["title", "describe"],
             threshold: 0.3,
-            minMatchCharLength: Math.max(3, Math.floor(searched.length / 2)),
+            minMatchCharLength: Math.max(2, Math.floor(searched.length / 2)),
         };
 
         const fuseInstance = new fuse(products, options);
