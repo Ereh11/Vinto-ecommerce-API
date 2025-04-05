@@ -2,7 +2,6 @@ const sendResponse = require("../utils/sendResponse.js");
 const asyncHandler = require("../middlewares/asyncHandler.js");
 const status = require("../utils/status.js");
 const appError = require("../utils/appError.js");
-const mongoose = require("mongoose");
 const { Category } = require("../models/category.modle.js");
 
 
