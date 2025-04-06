@@ -166,6 +166,7 @@ exports.getAllUserCarts = asyncHandler(async (req, res) => {
       product: item.product,
       quantity: item.quantity,
       status: cart.status,
+      maxAllowed: item.product.quantity + item.quantity
     }));
 
     return {
@@ -437,6 +438,7 @@ exports.partialUpdateCart = asyncHandler(async (req, res) => {
       product: item.product ? item.product : null,
       quantity: item.quantity,
       status: updatedCart.status,
+      maxAllowed: item.product.quantity + item.quantity
     }));
 
     const formattedResponse = {
