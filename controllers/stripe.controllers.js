@@ -63,7 +63,7 @@ const createCheckoutSession = async (req, res) => {
             name: 'Order Payment',
             description: 'Payment for your order'
           },
-          unit_amount: Math.round(cart.total * 100),
+          unit_amount: Math.round((cart.total + 1000) * 100),
         },
         quantity: 1,
       }],

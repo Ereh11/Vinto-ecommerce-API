@@ -21,14 +21,20 @@ const createShipmentOrder = asyncHandler(async (req, res) => {
 
 // GET ALL ShipmentOrder
 const getAllShipmentOrder = asyncHandler(async (req, res) => {
-  const shipmentOrder = await ShipmentOrder.find();
-  if (shipmentOrder.length === 0) {
+  
+  
+  const shipmentOrder = await ShipmentOrder.find()
+    .populate("cart")
+    .populate("shipmentInfo")
+    .sort({ createdAt: -1 });
+  
+  if (!shipmentOrder || shipmentOrder.length === 0) {
     return sendResponse(
       res,
       status.Fail,
       404,
       { shipmentOrder: null },
-      "No ShipmentOrder found"
+      "ShipmentOrder not found"
     );
   }
   sendResponse(
@@ -36,7 +42,7 @@ const getAllShipmentOrder = asyncHandler(async (req, res) => {
     status.Success,
     200,
     { shipmentOrder },
-    "All ShipmentOrder fetched successfully"
+    "ShipmentOrder fetched successfully"
   );
 });
 
