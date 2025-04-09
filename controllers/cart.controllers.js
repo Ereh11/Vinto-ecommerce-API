@@ -316,9 +316,10 @@ exports.updateCart = asyncHandler(async (req, res) => {
 });
 
 exports.partialUpdateCart = asyncHandler(async (req, res) => {
-  const { itemOrderedId, newQuantity } = req.body;
+  console.log(req.body);
   const userId = req.params.id;
 
+  // Get the cart with all ordered items
   const cart = await Cart.findOne({ user: userId, status: 'pending' })
     .populate({
       path: 'ItemsOrdered',
@@ -332,127 +333,99 @@ exports.partialUpdateCart = asyncHandler(async (req, res) => {
     return sendResponse(res, status.Fail, 404, { message: "Cart not found" });
   }
 
-  const itemOrdered = cart.ItemsOrdered.find(item =>
-    item._id.equals(itemOrderedId)
-  );
+  // Process each item ID and quantity from the request body
+  const updatePromises = [];
+  let totalPriceChange = 0;
+  const itemsToDelete = [];
 
-  if (!itemOrdered) {
-    return sendResponse(res, status.Fail, 404, { message: "Item not found in cart" });
-  }
+  // Process each item in the request body
+  for (const [itemOrderedId, newQuantity] of Object.entries(req.body)) {
 
-  const product = await Product.findById(itemOrdered.product._id);
-  if (!product) {
-    return sendResponse(res, status.Fail, 404, { message: "Product not found" });
-  }
-
-  if (newQuantity <= 0) {
-    cart.ItemsOrdered = cart.ItemsOrdered.filter(item =>
-      !item._id.equals(itemOrderedId)
+    const itemOrdered = cart.ItemsOrdered.find(item =>
+      item._id.toString() === itemOrderedId
     );
 
-    const pricePerItem = itemOrdered.product.discount
-      ? itemOrdered.product.price * (1 - itemOrdered.product.discount / 100)
-      : itemOrdered.product.price;
-    cart.total -= pricePerItem * itemOrdered.quantity;
-
-
-    product.quantity += itemOrdered.quantity;
-
-    await ItemOrdered.findByIdAndDelete(itemOrderedId);
-
-
-    await Promise.all([
-      product.save(),
-      cart.save()
-    ]);
-
-    const updatedCart = await Cart.findOne({ user: userId, status: 'pending' })
-      .sort({ date: -1 })
-      .populate({
-        path: 'ItemsOrdered',
-        populate: { path: 'product', model: 'Product' }
-      });
-
-    if (!updatedCart) {
-      return sendResponse(res, status.Fail, 404, { message: "Cart not found after update" });
+    if (!itemOrdered) {
+      continue;
     }
 
-    // Format response
-    const productsWithStatus = updatedCart.ItemsOrdered.map(item => ({
-      orderedItemId: item._id,
-      product: item.product ? item.product : null,
-      quantity: item.quantity,
-      status: updatedCart.status,
-    }));
-
-    const formattedResponse = {
-      _id: updatedCart._id,
-      date: updatedCart.date,
-      total: updatedCart.total,
-      status: updatedCart.status,
-      items: productsWithStatus
-    };
-
-    return sendResponse(res, status.Success, 200, { cart: formattedResponse });
-
-  } else {
-    const quantityDelta = newQuantity - itemOrdered.quantity;
-    const oldQuantity = itemOrdered.quantity;
-    const availableQuantity = product.quantity + oldQuantity;
-
-
-    if (newQuantity > availableQuantity) {
-      return res.status(400).json({
-        error: `Only ${availableQuantity} available in stock`,
-        maxAllowed: availableQuantity
-      });
+    const product = await Product.findById(itemOrdered.product._id);
+    if (!product) {
+      continue;
     }
-    product.quantity = availableQuantity - newQuantity;
 
-    itemOrdered.quantity = newQuantity;
+    if (newQuantity <= 0) {
+      cart.ItemsOrdered = cart.ItemsOrdered.filter(item =>
+        item._id.toString() !== itemOrderedId
+      );
 
-    cart.total = cart.ItemsOrdered.reduce((sum, item) => {
-      const itemPrice = item.product.discount
-        ? item.product.price * (1 - item.product.discount / 100)
-        : item.product.price;
-      return sum + (itemPrice * item.quantity);
-    }, 0);
+      const pricePerItem = itemOrdered.product.discount
+        ? itemOrdered.product.price * (1 - itemOrdered.product.discount / 100)
+        : itemOrdered.product.price;
 
-    await Promise.all([
-      product.save(),
-      itemOrdered.save(),
-      cart.save()
-    ]);
-    const updatedCart = await Cart.findOne({ user: userId, status: 'pending' })
-      .sort({ date: -1 })
-      .populate({
-        path: 'ItemsOrdered',
-        populate: { path: 'product', model: 'Product' }
-      });
+      totalPriceChange -= pricePerItem * itemOrdered.quantity;
 
-    if (!updatedCart) {
-      return sendResponse(res, status.Fail, 404, { message: "Cart not found after update" });
+      product.quantity += itemOrdered.quantity;
+
+      updatePromises.push(product.save());
+      itemsToDelete.push(ItemOrdered.findByIdAndDelete(itemOrderedId));
+    } else {
+      const quantityDelta = newQuantity - itemOrdered.quantity;
+      const oldQuantity = itemOrdered.quantity;
+      const availableQuantity = product.quantity + oldQuantity;
+
+      if (newQuantity > availableQuantity) {
+        continue;
+      }
+
+      product.quantity = availableQuantity - newQuantity;
+      itemOrdered.quantity = newQuantity;
+
+      const itemPrice = itemOrdered.product.discount
+        ? itemOrdered.product.price * (1 - itemOrdered.product.discount / 100)
+        : itemOrdered.product.price;
+
+      totalPriceChange += quantityDelta * itemPrice;
+
+      updatePromises.push(product.save());
+      updatePromises.push(itemOrdered.save());
     }
-    const productsWithStatus = updatedCart.ItemsOrdered.map(item => ({
-      orderedItemId: item._id,
-      product: item.product ? item.product : null,
-      quantity: item.quantity,
-      status: updatedCart.status,
-      maxAllowed: item.product.quantity + item.quantity
-    }));
-
-    const formattedResponse = {
-      _id: updatedCart._id,
-      date: updatedCart.date,
-      total: updatedCart.total,
-      status: updatedCart.status,
-      items: productsWithStatus
-    };
-    return sendResponse(res, status.Success, 200, { cart: formattedResponse });
-
   }
-});
 
+  cart.total += totalPriceChange;
+  updatePromises.push(cart.save());
+
+  await Promise.all([...updatePromises, ...itemsToDelete]);
+
+  const updatedCart = await Cart.findOne({ user: userId, status: 'pending' })
+    .sort({ date: -1 })
+    .populate({
+      path: 'ItemsOrdered',
+      populate: { path: 'product', model: 'Product' }
+    });
+
+  if (!updatedCart) {
+    return sendResponse(res, status.Fail, 404, { message: "Cart not found after update" });
+  }
+
+  const productsWithStatus = updatedCart.ItemsOrdered.map(item => ({
+    orderedItemId: item._id,
+    product: item.product ? item.product : null,
+    quantity: item.quantity,
+    status: updatedCart.status,
+    maxAllowed: item.product.quantity + item.quantity
+  }));
+
+  const formattedResponse = {
+    id: updatedCart._id,
+    date: updatedCart.date,
+    total: updatedCart.total,
+    status: updatedCart.status,
+    items: productsWithStatus
+  };
+
+  return sendResponse(res, status.Success, 200, { cart: formattedResponse });
+});
 
 exports.removeItemFromCart = asyncHandler(async (req, res) => {
   const { itemOrderedId } = req.body;
