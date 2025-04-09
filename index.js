@@ -32,12 +32,13 @@ mongoose
   });
 
 // Middleware
-app.use(
-  cors({
-    origin: "http://localhost:4200", // Angular frontend URL
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: [
+    'https://vinto-ecommerce.netlify.app',
+    'http://localhost:4200'
+  ],
+  credentials: true,
+}));
 app.use(express.json());
 
 // Routes
