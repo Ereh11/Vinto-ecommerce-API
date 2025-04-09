@@ -12,6 +12,7 @@ const wishlistRoutes = require("./routes/wishedList.route.js");
 const itemOrderedRoutes = require("./routes/itemOrdered.route.js");
 const cartRoutes = require("./routes/cart.route.js");
 const shipmentInfoRoutes = require("./routes/shipmentInfo.route.js");
+const shipmentOrderRoutes = require("./routes/shipmentOrder.route.js")
 const userRouter = require("./routes/user.route");
 const authRouter = require("./routes/authentication/user.route");
 const profileRouter = require("./routes/profile.route");
@@ -50,6 +51,7 @@ app.use("/api/shipmentInfo", shipmentInfoRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/stripe", stripeRoutes);
+app.use("/api/shipmentOrder", shipmentOrderRoutes);
 
 app.all("*", (req, res) => {
   sendResponse(
