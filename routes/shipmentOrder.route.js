@@ -6,14 +6,17 @@ const validateItemID = require("../middlewares/validateItemID.js");
 
 
 router.route("/")
-    .post(validateShipmentOrder, shipmentOrderController.createShipmentOrder)
-    .get(shipmentOrderController.getAllShipmentOrder)
-    .delete(shipmentOrderController.deleteAllShipmentOrder)
+  .post(validateShipmentOrder, shipmentOrderController.createShipmentOrder)
+  .get(shipmentOrderController.getAllShipmentOrder)
+  .delete(shipmentOrderController.deleteAllShipmentOrder)
 
 router.route("/:id")
-    .get(validateItemID, shipmentOrderController.getShipmentOrder)
-    .put(validateItemID, shipmentOrderController.updateShipmentOrder)
-    .patch(validateItemID, shipmentOrderController.updatePartialyShipmentOrder)
-    .delete(validateItemID, shipmentOrderController.deleteShipmentOrder)
+  .get(validateItemID, shipmentOrderController.getShipmentOrder)
+  .put(validateItemID, shipmentOrderController.updateShipmentOrder)
+  .patch(validateItemID, shipmentOrderController.updatePartialyShipmentOrder)
+  .delete(validateItemID, shipmentOrderController.deleteShipmentOrder)
+
+router.route("/progress/:cartId")
+  .get(shipmentOrderController.getShipmentOrderByCartId)
 
 module.exports = router;
