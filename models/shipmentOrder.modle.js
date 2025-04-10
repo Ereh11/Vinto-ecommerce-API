@@ -15,10 +15,15 @@ const shipmentOrderSchema = new mongoose.Schema({
         default: "In-Proccess",
         required: true,
     },
-    date: {
+    dateOfOrder: {
         type: Date,
         default: Date.now,
         required: true,
+    },
+    dateOfDelivery: {
+        type: Date,
+        required: true,
+        default: () => new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
     },
 });
 const ShipmentOrder = mongoose.model("ShipmentOrder", shipmentOrderSchema);

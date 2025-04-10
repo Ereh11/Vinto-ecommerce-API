@@ -1,4 +1,5 @@
 const User = require("../models/user.modle");
+const { WishedList } = require("../models/wishedList.modle.js");
 const UserOTPVerification = require("../models/UserOTPverification");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -305,7 +306,11 @@ const verifyOTP = async (req, res) => {
         message: "Invalid verification code",
       });
     }
-
+    const wishedList = new WishedList({
+      user: userId,
+      products: [],
+    });
+    await wishedList.save();
     // Update user verification status
     await User.updateOne({ _id: userId }, { verified: true });
     await UserOTPVerification.deleteOne({ userId });

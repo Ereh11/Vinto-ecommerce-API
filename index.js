@@ -12,10 +12,10 @@ const wishlistRoutes = require("./routes/wishedList.route.js");
 const itemOrderedRoutes = require("./routes/itemOrdered.route.js");
 const cartRoutes = require("./routes/cart.route.js");
 const shipmentInfoRoutes = require("./routes/shipmentInfo.route.js");
+const shipmentOrderRoutes = require("./routes/shipmentOrder.route.js");
 const userRouter = require("./routes/user.route");
 const authRouter = require("./routes/authentication/user.route");
 const googleAuthRouter = require("./routes/authentication/google.route");
-//const productRoutes = require("./routes/product.route.js")
 const profileRouter = require("./routes/profile.route");
 const errorHandler = require("./middlewares/errorHandler.js");
 const passport = require("passport");
@@ -48,16 +48,16 @@ app.use(passport.initialize());
 // Routes
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/auth", googleAuthRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/itemOrdered", itemOrderedRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/shipmentInfo", shipmentInfoRoutes);
 app.use("/api/products", productRoutes);
-app.use("/api/liked", likeRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/stripe", stripeRoutes);
-app.use("/api/auth", googleAuthRouter);
+app.use("/api/shipmentOrder", shipmentOrderRoutes);
 
 app.all("*", (req, res) => {
   sendResponse(
@@ -73,10 +73,15 @@ app.listen(4000, () => {
   console.log("Server is listening on port 4000");
 });
 
-//For unKnown Error
-process.on("unhandledRejection", (err) => {
-  console.error("Unhandled Rejection! Shutting down...", err);
-  server.close(() => process.exit(1));
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception! Shutting down...");
+  console.error(err);
+  process.exit(1);
 });
 
-//
+// Handle Unhandled Rejections
+process.on("unhandledRejection", (err, promise) => {
+  console.error("Unhandled Rejection:", err.message || err);
+});
+
+app.use(errorHandler);

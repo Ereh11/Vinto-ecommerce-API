@@ -1,12 +1,12 @@
 const express = require("express");
-const { check, validationResult } = require("express-validator");
 const productcontroller = require('../controllers/product.controllers')
-const validateschema = require('../middlewares/validateproduct')
-const validateItemID = require("../middlewares/validateItemID");
+const validateProduct = require('../middlewares/validations/validateProduct')
+const validateObjectId = require('../middlewares/validateObjectId')
 const router = express.Router();
+
 router.route('/')
-  .get(productcontroller.getallproducts)
-  .post(validateschema, productcontroller.postproducts)
+  .get(productcontroller.getAllProducts)
+  .post(validateProduct, productcontroller.postProduct)
   .delete(productcontroller.deleteproducts);
 
 router.route('/newarrivals')
@@ -16,15 +16,16 @@ router.route('/offers')
 router.route('/toprated')
   .get(productcontroller.getTopRated);
 router.route('/search')
-  .get(productcontroller.searchProducts);
+  .get(productcontroller.searchProducts)
+  .post(validateProduct, productcontroller.searchProducts);
 router.route('/filter')
   .get(productcontroller.getFilteredProducts);
 
-router.route('/:productid')
-  .get(productcontroller.getsingleproducts)
-  .patch(productcontroller.patchproducts)
-  .put(validateschema, productcontroller.putproducts)
-  .delete(productcontroller.deleteproductsbyid)
+router.route('/:productId')
+  .get(validateObjectId("productId"), productcontroller.getSingleProduct)
+  .patch(validateObjectId("productId"), productcontroller.patchProduct)
+  .put(validateObjectId("productId"), validateProduct, productcontroller.putProduct)
+  .delete(validateObjectId("productId"), productcontroller.deleteProductById)
 
 
 
