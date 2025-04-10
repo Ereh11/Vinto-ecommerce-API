@@ -47,14 +47,12 @@ const checkoutSuccess = async (req, res) => {
         shipmentData.phone2 ? [shipmentData.phone2] : []
       )
     });
-    console.log("test3")
     await shipmentInfo.save();
-    console.log("test4")
     const shipmentOrder = new ShipmentOrder({
       cart: cartId,
-      shipmentInfo: shipmentInfo._id
+      shipmentInfo: shipmentInfo._id,
+      stripeSessionId: sessionId
     });
-    console.log("test5")
     await shipmentOrder.save();
 
     console.log("test6")
@@ -108,7 +106,61 @@ const createCheckoutSession = async (req, res) => {
   }
 };
 
-module.exports = { createCheckoutSession, checkoutSuccess };
+const cancelOrder = async (req, res) => {
+  try {
+    const { userId, cartId } = req.body;
+    const shipmentOrder = await ShipmentOrder.findOne({ cart: cartId })
+      .populate('cart')
+      .exec();
+    const sessionId = shipmentOrder.stripeSessionId;
+
+
+    const cart = await Cart.findOne({ _id: cartId, user: userId });
+    if (!cart) throw new Error('Cart not found or unauthorized');
+    if (cart.status !== 'inprogress') {
+      throw new Error('Order cannot be canceled');
+    }
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ['payment_intent']
+    });
+    if (session.payment_status !== 'paid') {
+      throw new Error('Payment not completed');
+    }
+    const refund = await stripe.refunds.create({
+      payment_intent: session.payment_intent.id
+    });
+    const updateResult = await Cart.updateOne(
+      { _id: cartId },
+      {
+        $set: {
+          status: 'canceled',
+        }
+      }
+    );
+    if (!updateResult.modifiedCount) throw new Error('Cart update failed');
+
+    if (shipmentOrder) {
+      await ShipmentOrder.findOneAndDelete({ cart: cartId });
+    } else {
+      console.warn(`No shipment order found for cart ${cartId}`);
+    }
+
+    res.status(200).json({
+      success: true,
+      refundId: refund.id
+    });
+
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
+  }
+}
+
+
+module.exports = { createCheckoutSession, checkoutSuccess, cancelOrder };
 
 
 
