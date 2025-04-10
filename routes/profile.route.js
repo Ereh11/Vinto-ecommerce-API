@@ -7,9 +7,10 @@ const {
   updateProfile,
   deleteProfile,
 } = require("../controllers/profile.controllers");
+const { protect } = require("../middlewares/auth");
 
 router.get("/:id", getProfile);
-router.post("/:id", createProfile);
+router.post("/:id", protect, createProfile);
 router.put("/:id", updateProfile);
 router.delete("/:id", deleteProfile);
 

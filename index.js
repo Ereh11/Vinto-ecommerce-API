@@ -14,9 +14,11 @@ const cartRoutes = require("./routes/cart.route.js");
 const shipmentInfoRoutes = require("./routes/shipmentInfo.route.js");
 const userRouter = require("./routes/user.route");
 const authRouter = require("./routes/authentication/user.route");
+const googleAuthRouter = require("./routes/authentication/google.route");
 //const productRoutes = require("./routes/product.route.js")
 const profileRouter = require("./routes/profile.route");
 const errorHandler = require("./middlewares/errorHandler.js");
+const passport = require("passport");
 const app = express();
 
 const MONGODB_URI = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.CLUSTER_NAEM}:27017,${process.env.CLUSTER_NAME}:27017,${process.env.CLUSTER_NAME}:27017/${process.env.DB_NAME}?ssl=true&replicaSet=atlas-7o5bfh-shard-0&authSource=admin&retryWrites=true&w=majority&appName=${process.env.APP_NAME}`;
@@ -40,6 +42,9 @@ app.use(
 );
 app.use(express.json());
 
+// Initialize passport
+app.use(passport.initialize());
+
 // Routes
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
@@ -51,8 +56,8 @@ app.use("/api/shipmentInfo", shipmentInfoRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/liked", likeRoutes);
 app.use("/api/wishlist", wishlistRoutes);
-app.use('/api/stripe', stripeRoutes);
-
+app.use("/api/stripe", stripeRoutes);
+app.use("/api/auth", googleAuthRouter);
 
 app.all("*", (req, res) => {
   sendResponse(
