@@ -15,7 +15,6 @@ const shipmentInfoRoutes = require("./routes/shipmentInfo.route.js");
 const shipmentOrderRoutes = require("./routes/shipmentOrder.route.js");
 const userRouter = require("./routes/user.route");
 const authRouter = require("./routes/authentication/user.route");
-const googleAuthRouter = require("./routes/authentication/google.route");
 const profileRouter = require("./routes/profile.route");
 const errorHandler = require("./middlewares/errorHandler.js");
 const passport = require("passport");
@@ -49,7 +48,6 @@ app.use(passport.initialize());
 // Routes
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
-app.use("/api/auth", googleAuthRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/itemOrdered", itemOrderedRoutes);
