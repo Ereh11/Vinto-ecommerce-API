@@ -2,6 +2,8 @@
 const Profile = require("../models/profile.modle");
 const User = require("../models/user.modle");
 
+const MAX_PHOTO_SIZE = process.env.MAX_PHOTO_SIZE_MB * 1024 * 1024; // Convert MB to bytes
+
 const getProfile = async (req, res) => {
   try {
     const profile = await Profile.findOne({ user: req.params.id }).populate(
@@ -31,6 +33,19 @@ const getProfile = async (req, res) => {
 
 const createProfile = async (req, res) => {
   try {
+    // Check if photo was uploaded
+    if (req.files && req.files.picture) {
+      const photo = req.files.picture;
+
+      // Check file size
+      if (photo.size > MAX_PHOTO_SIZE) {
+        return res.status(400).json({
+          status: "error",
+          message: `Profile picture size must be less than ${process.env.MAX_PHOTO_SIZE_MB}MB`,
+        });
+      }
+    }
+
     const userId = req.params.id;
 
     const profile = await Profile.create({
@@ -55,6 +70,19 @@ const createProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
+    // Check if photo was uploaded
+    if (req.files && req.files.picture) {
+      const photo = req.files.picture;
+
+      // Check file size
+      if (photo.size > MAX_PHOTO_SIZE) {
+        return res.status(400).json({
+          status: "error",
+          message: `Profile picture size must be less than ${process.env.MAX_PHOTO_SIZE_MB}MB`,
+        });
+      }
+    }
+
     const updateData = { ...req.body };
 
     // Handle file upload if there is one

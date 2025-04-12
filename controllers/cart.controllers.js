@@ -103,7 +103,8 @@ exports.addToCart = asyncHandler(async (req, res) => {
 });
 
 exports.getMyCart = asyncHandler(async (req, res) => {
-  const cart = await Cart.findOne({ user: req.params.id, status: "pending" })
+  console.log("test")
+  let cart = await Cart.findOne({ user: req.params.id, status: "pending" })
     .sort({ date: -1 })
     .populate({
       path: "ItemsOrdered",
@@ -113,6 +114,12 @@ exports.getMyCart = asyncHandler(async (req, res) => {
       },
     });
 
+  if (!cart) {
+    cart = new Cart({ user: req.params.id, ItemsOrdered: [], total: 0 });
+    cart.save();
+  }
+
+  console.log("test1")
   const productsWithStatus = cart.ItemsOrdered.map(item => ({
     orderedItemId: item._id,
     product: item.product ? item.product : null,
@@ -121,9 +128,7 @@ exports.getMyCart = asyncHandler(async (req, res) => {
     maxAllowed: item.product.quantity + item.quantity
   }));
 
-  if (!cart) {
-    return sendResponse(res, status.Fail, 404, { cart: null }, "No Cart found");
-  }
+  console.log("test2")
 
   const formattedResponse = {
     // cartId: cart._id,
