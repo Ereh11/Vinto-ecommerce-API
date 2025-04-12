@@ -10,6 +10,7 @@
 .prettier.config.js
 .prettier.config.cjs
 .env
+.vscode
 node_modules.env
 node_modules/
 post.js
