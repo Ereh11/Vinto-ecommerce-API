@@ -319,6 +319,10 @@ const verifyOTP = async (req, res) => {
     const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRES_IN,
     });
+    const existingWishedList = await WishedList.findOne({ user: userId });
+    if (existingWishedList) {
+      await WishedList.deleteOne({ user: userId });
+    }
     // When the user is verified, we create wishedList for the user
     await WishedList.create({
       user: userId,

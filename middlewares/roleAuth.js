@@ -27,14 +27,14 @@ exports.isAdmin = asyncHandler(async (req, res, next) => {
   next();
 });
 
-exports.hasShipmentAccess = asyncHandler(async (req, res, next) => {
-  const user = await User.findById(req.user.id);
+// exports.hasShipmentAccess = asyncHandler(async (req, res, next) => {
+//   const user = await User.findById(req.user.id);
 
-  if (!user || !["admin", "shipper"].includes(user.role)) {
-    return res.status(403).json({
-      status: "error",
-      message: "You do not have access to shipment operations",
-    });
-  }
-  next();
-});
+//   if (!user || !["admin"].includes(user.role)) {
+//     return res.status(403).json({
+//       status: "error",
+//       message: "You do not have access to shipment operations",
+//     });
+//   }
+//   next();
+// });
