@@ -1,5 +1,6 @@
 const { Cart } = require("../models/cart.modle.js");
 const { ItemOrdered } = require("../models/itemOrdered.modle.js");
+const { ShipmentOrder } = require("../models/shipmentOrder.modle.js");
 const { Product } = require("../models/product.modle.js");
 const mongoose = require("mongoose");
 const sendResponse = require("../utils/sendResponse");
@@ -166,11 +167,26 @@ exports.getAllUserCarts = asyncHandler(async (req, res) => {
           "title price describe rate discount quantity img characteristics category",
       },
     });
+
+  const cartIds = carts.map(cart => cart._id);
+  const shipmentOrders = await ShipmentOrder.find({ cart: { $in: cartIds } })
+    .sort({ dateOfOrder: -1 });
+
+  const latestShipmentOrders = {};
+  shipmentOrders.forEach(order => {
+    const cartId = order.cart.toString();
+    latestShipmentOrders[cartId] = order;
+  });
+
   const formattedResponse = carts.map((cart) => {
+    const cartIdStr = cart._id.toString();
+    const shipmentOrder = latestShipmentOrders[cartIdStr];
+    const currentStatus = shipmentOrder ? shipmentOrder.status : cart.status;
+
     const productsWithStatus = cart.ItemsOrdered.map((item) => ({
       product: item.product,
       quantity: item.quantity,
-      status: cart.status,
+      status: currentStatus,
       maxAllowed: item.product.quantity + item.quantity
     }));
 
@@ -178,10 +194,11 @@ exports.getAllUserCarts = asyncHandler(async (req, res) => {
       cartId: cart._id,
       date: cart.date,
       total: cart.total,
-      status: cart.status,
+      status: currentStatus,
       items: productsWithStatus,
     };
   });
+
   sendResponse(
     res,
     status.Success,
