@@ -1,3 +1,17 @@
-node_modules
+# Ignore Prettier cache and config files
+.prettierignore
+.prettierrc
+.prettierrc.json
+.prettierrc.yml
+.prettierrc.yaml
+.prettierrc.js
+.prettierrc.cjs
+.prettierrc.toml
+.prettier.config.js
+.prettier.config.cjs
 .env
 .vscode
+node_modules.env
+node_modules/
+post.js
+jSend.md
