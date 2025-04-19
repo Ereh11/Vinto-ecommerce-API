@@ -32,11 +32,17 @@ const checkoutSuccess = async (req, res) => {
     const cart = await Cart.findById(cartId); // Fetch the cart to get user ID
     if (!cart) throw new Error('Cart not found');
 
+    const userId = cart.user._id;
+
+    await Cart.deleteMany({
+      user: userId,
+      status: 'pending',
+      _id: { $ne: cartId }
+    });
+
+
     // Retrieve and parse shipmentData from metadata
     const shipmentData = JSON.parse(session.metadata.shipmentData);
-    console.log("Shipment Data:", shipmentData);
-
-    console.log("test2")
     const shipmentInfo = new ShipmentInfo({
       user: cart.user._id,
       city: shipmentData.city,
@@ -55,7 +61,7 @@ const checkoutSuccess = async (req, res) => {
     });
     await shipmentOrder.save();
 
-    console.log("test6")
+
     res.redirect('http://localhost:4200/');
   } catch (error) {
     res.redirect(`http://localhost:4200/checkout-error?message=${encodeURIComponent(error.message)}`);
